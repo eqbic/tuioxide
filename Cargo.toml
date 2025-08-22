@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 anyhow = "~1.0"
 rosc = "~0.11"
+euclid = "~0.22"
