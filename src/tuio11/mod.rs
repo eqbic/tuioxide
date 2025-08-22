@@ -1,3 +1,4 @@
+pub mod blob;
 pub mod cursor;
 pub mod object;
 pub mod point;

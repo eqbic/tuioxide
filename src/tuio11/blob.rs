@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Object {
+pub struct Blob {
     state: TuioState,
     start_time: TuioTime,
     current_time: TuioTime,
@@ -16,12 +16,14 @@ pub struct Object {
     speed: f32,
     acceleration: f32,
     angle: f32,
-    symbol_id: u32,
+    blob_id: u32,
+    size: Vector2D<f32>,
+    area: f32,
     rotation_speed: f32,
     rotation_acceleration: f32,
 }
 
-impl Point for Object {
+impl Point for Blob {
     fn start_time(&self) -> &TuioTime {
         &self.start_time
     }
@@ -47,7 +49,7 @@ impl Point for Object {
     }
 }
 
-impl Translation for Object {
+impl Translation for Blob {
     fn position(&self) -> &Point2D<f32> {
         &self.position
     }
@@ -77,7 +79,7 @@ impl Translation for Object {
     }
 }
 
-impl Rotation for Object {
+impl Rotation for Blob {
     fn angle(&self) -> f32 {
         self.angle
     }
@@ -100,52 +102,5 @@ impl Rotation for Object {
 
     fn set_rotation_acceleration(&mut self, rotation_acceleration: f32) {
         self.rotation_acceleration = rotation_acceleration
-    }
-}
-
-impl Object {
-    pub fn new(
-        start_time: TuioTime,
-        session_id: u32,
-        symbol_id: u32,
-        position: Point2D<f32>,
-        angle: f32,
-        velocity: Vector2D<f32>,
-        rotation_speed: f32,
-        acceleration: f32,
-        rotation_acceleration: f32,
-    ) -> Self {
-        Self {
-            state: TuioState::Added,
-            current_time: start_time.clone(),
-            start_time,
-            session_id,
-            symbol_id,
-            position,
-            velocity,
-            speed: velocity.length(),
-            acceleration,
-            angle,
-            rotation_acceleration,
-            rotation_speed,
-        }
-    }
-
-    pub fn update(
-        &mut self,
-        current_time: TuioTime,
-        position: Point2D<f32>,
-        angle: f32,
-        velocity: Vector2D<f32>,
-        rotation_speed: f32,
-        acceleration: f32,
-        rotation_acceleration: f32,
-    ) {
-        self.update_translation(current_time, position, velocity, acceleration);
-        self.update_rotation(current_time, angle, rotation_speed, rotation_acceleration);
-    }
-
-    pub fn symbol_id(&self) -> u32 {
-        self.symbol_id
     }
 }

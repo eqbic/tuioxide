@@ -105,4 +105,8 @@ impl Cursor {
     ) {
         self.update_translation(current_time, position, velocity, acceleration);
     }
+
+    pub fn cursor_id(&self) -> u32 {
+        self.cursor_id
+    }
 }
