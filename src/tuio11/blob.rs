@@ -104,3 +104,54 @@ impl Rotation for Blob {
         self.rotation_acceleration = rotation_acceleration
     }
 }
+
+impl Blob {
+    pub fn new(
+        start_time: TuioTime,
+        session_id: u32,
+        blob_id: u32,
+        position: Point2D<f32>,
+        angle: f32,
+        size: Vector2D<f32>,
+        area: f32,
+        velocity: Vector2D<f32>,
+        rotation_speed: f32,
+        acceleration: f32,
+        rotation_acceleration: f32,
+    ) -> Self {
+        Self {
+            state: TuioState::Added,
+            current_time: start_time.clone(),
+            start_time,
+            session_id,
+            blob_id,
+            position,
+            velocity,
+            speed: velocity.length(),
+            acceleration,
+            angle,
+            size,
+            area,
+            rotation_acceleration,
+            rotation_speed,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        current_time: TuioTime,
+        position: Point2D<f32>,
+        angle: f32,
+        size: Vector2D<f32>,
+        area: f32,
+        velocity: Vector2D<f32>,
+        rotation_speed: f32,
+        acceleration: f32,
+        rotation_acceleration: f32,
+    ) {
+        self.update_translation(current_time, position, velocity, acceleration);
+        self.update_rotation(current_time, angle, rotation_speed, rotation_acceleration);
+        self.size = size;
+        self.area = area;
+    }
+}
