@@ -1,112 +1,74 @@
 use euclid::default::{Point2D, Vector2D};
+use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::{
-    common::{tuio_state::TuioState, tuio_time::TuioTime},
-    tuio11::{point::Point, translation::Translation},
+    common::{
+        errors::TuioError,
+        osc_utils::{extract_float, extract_int},
+    },
+    tuio11::profile::Profile,
 };
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cursor {
-    state: TuioState,
-    start_time: TuioTime,
-    current_time: TuioTime,
-    session_id: u32,
-    cursor_id: u32,
+    session_id: i32,
     position: Point2D<f32>,
     velocity: Vector2D<f32>,
-    speed: f32,
     acceleration: f32,
 }
 
-impl Point for Cursor {
-    fn start_time(&self) -> &TuioTime {
-        &self.start_time
-    }
+impl<'a> TryFrom<&'a OscMessage> for Cursor {
+    type Error = TuioError;
 
-    fn current_time(&self) -> &TuioTime {
-        &self.current_time
-    }
-
-    fn set_current_time(&mut self, current_time: TuioTime) {
-        self.current_time = current_time
-    }
-
-    fn session_id(&self) -> u32 {
-        self.session_id
-    }
-
-    fn state(&self) -> &TuioState {
-        &self.state
-    }
-
-    fn set_state(&mut self, state: TuioState) {
-        self.state = state
+    fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
+        let session_id = extract_int(&message, 1)?;
+        let position = Point2D::new(extract_float(&message, 2)?, extract_float(&message, 3)?);
+        let velocity = Vector2D::new(extract_float(&message, 4)?, extract_float(&message, 5)?);
+        let acceleration = extract_float(&message, 6)?;
+        let cursor = Cursor::new(session_id, position, velocity, acceleration);
+        Ok(cursor)
     }
 }
 
-impl Translation for Cursor {
-    fn position(&self) -> &Point2D<f32> {
-        &self.position
+impl Into<OscPacket> for Cursor {
+    fn into(self) -> OscPacket {
+        OscPacket::Message(OscMessage {
+            addr: "/tuio/2Dcur".into(),
+            args: vec![
+                OscType::String("set".into()),
+                OscType::Int(self.session_id),
+                OscType::Float(self.position.x),
+                OscType::Float(self.position.y),
+                OscType::Float(self.velocity.x),
+                OscType::Float(self.velocity.y),
+                OscType::Float(self.acceleration),
+            ],
+        })
+    }
+}
+
+impl<'a> Profile<'a> for Cursor {
+    fn session_id(&self) -> i32 {
+        self.session_id
     }
 
-    fn velocity(&self) -> &Vector2D<f32> {
-        &self.velocity
-    }
-
-    fn speed(&self) -> f32 {
-        self.speed
-    }
-
-    fn set_position(&mut self, position: Point2D<f32>) {
-        self.position = position
-    }
-
-    fn set_velocity(&mut self, velocity: Vector2D<f32>) {
-        self.velocity = velocity
-    }
-
-    fn set_acceleration(&mut self, acceleration: f32) {
-        self.acceleration = acceleration
-    }
-
-    fn set_speed(&mut self, speed: f32) {
-        self.speed = speed
+    fn address() -> String {
+        "/tuio/2Dcur".into()
     }
 }
 
 impl Cursor {
     pub fn new(
-        start_time: TuioTime,
-        session_id: u32,
-        cursor_id: u32,
+        session_id: i32,
         position: Point2D<f32>,
         velocity: Vector2D<f32>,
         acceleration: f32,
     ) -> Self {
         Self {
-            state: TuioState::Added,
-            current_time: start_time.clone(),
-            start_time,
             session_id,
-            cursor_id,
             position,
             velocity,
-            speed: velocity.length(),
             acceleration,
         }
-    }
-
-    pub fn update(
-        &mut self,
-        current_time: TuioTime,
-        position: Point2D<f32>,
-        velocity: Vector2D<f32>,
-        acceleration: f32,
-    ) {
-        self.update_translation(current_time, position, velocity, acceleration);
-    }
-
-    pub fn cursor_id(&self) -> u32 {
-        self.cursor_id
     }
 }
