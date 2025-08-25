@@ -50,7 +50,7 @@ impl<'a> TryFrom<&'a OscMessage> for Object {
 impl From<Object> for OscPacket {
     fn from(val: Object) -> Self {
         OscPacket::Message(OscMessage {
-            addr: "/tuio/2Dobj".into(),
+            addr: Object::address(),
             args: vec![
                 OscType::String("set".into()),
                 OscType::Int(val.session_id),

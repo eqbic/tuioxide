@@ -6,10 +6,10 @@ use crate::tuio11::profile::Profile;
 
 use crate::{
     common::errors::TuioError,
-    tuio11::{blob::Blob, cursor::Cursor, object::Object},
+    tuio11::{blob::Blob, cursor::CursorProfile, object::Object},
 };
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Copy)]
 pub enum TuioBundleType {
     Cursor,
     Object,
@@ -20,7 +20,7 @@ pub enum TuioBundleType {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Set {
-    Cursor(Vec<Cursor>),
+    Cursor(Vec<CursorProfile>),
     Object(Vec<Object>),
     Blob(Vec<Blob>),
 }
@@ -35,6 +35,10 @@ pub struct TuioBundle {
 }
 
 impl TuioBundle {
+    pub fn profile_type(&self) -> TuioBundleType {
+        self.tuio_type
+    }
+
     pub fn source(&self) -> &Option<String> {
         &self.souce
     }
@@ -71,7 +75,7 @@ impl TuioBundle {
                     if message.args.len() != 7 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
-                    let cursor = Cursor::try_from(message)?;
+                    let cursor = CursorProfile::try_from(message)?;
                     set.push(cursor);
                 }
             }
@@ -199,7 +203,7 @@ impl OscEncoder {
 mod tests {
     use euclid::default::{Point2D, Vector2D};
 
-    use crate::tuio11::{cursor::Cursor, object::Object};
+    use crate::tuio11::{cursor::CursorProfile, object::Object};
 
     use super::*;
 
@@ -208,8 +212,8 @@ mod tests {
         let source = "test";
 
         let cursors = vec![
-            Cursor::new(5, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
-            Cursor::new(6, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
+            CursorProfile::new(5, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
+            CursorProfile::new(6, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
         ];
         let objects = vec![
             Object::new(

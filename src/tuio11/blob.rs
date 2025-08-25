@@ -53,7 +53,7 @@ impl<'a> TryFrom<&'a OscMessage> for Blob {
 impl From<Blob> for OscPacket {
     fn from(val: Blob) -> Self {
         OscPacket::Message(OscMessage {
-            addr: "/tuio/2Dblb".into(),
+            addr: Blob::address(),
             args: vec![
                 OscType::String("set".into()),
                 OscType::Int(val.session_id),

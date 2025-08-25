@@ -5,19 +5,37 @@ use crate::{
     common::{
         errors::TuioError,
         osc_utils::{extract_float, extract_int},
+        tuio_time::TuioTime,
     },
-    tuio11::profile::Profile,
+    tuio11::{container::Container, profile::Profile},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Cursor {
+    container: Container,
+    cursor: CursorProfile,
+}
+
+impl Cursor {
+    pub fn new(start_time: &TuioTime, cursor: CursorProfile) -> Self {
+        let container = Container::new(start_time);
+        Self { container, cursor }
+    }
+
+    pub fn update(&mut self, time: &TuioTime, cursor: CursorProfile) {
+        self.container.update(time);
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CursorProfile {
     session_id: i32,
     position: Point2D<f32>,
     velocity: Vector2D<f32>,
     acceleration: f32,
 }
 
-impl<'a> TryFrom<&'a OscMessage> for Cursor {
+impl<'a> TryFrom<&'a OscMessage> for CursorProfile {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
@@ -25,15 +43,15 @@ impl<'a> TryFrom<&'a OscMessage> for Cursor {
         let position = Point2D::new(extract_float(message, 2)?, extract_float(message, 3)?);
         let velocity = Vector2D::new(extract_float(message, 4)?, extract_float(message, 5)?);
         let acceleration = extract_float(message, 6)?;
-        let cursor = Cursor::new(session_id, position, velocity, acceleration);
+        let cursor = CursorProfile::new(session_id, position, velocity, acceleration);
         Ok(cursor)
     }
 }
 
-impl From<Cursor> for OscPacket {
-    fn from(val: Cursor) -> Self {
+impl From<CursorProfile> for OscPacket {
+    fn from(val: CursorProfile) -> Self {
         OscPacket::Message(OscMessage {
-            addr: "/tuio/2Dcur".into(),
+            addr: CursorProfile::address(),
             args: vec![
                 OscType::String("set".into()),
                 OscType::Int(val.session_id),
@@ -47,7 +65,7 @@ impl From<Cursor> for OscPacket {
     }
 }
 
-impl<'a> Profile<'a> for Cursor {
+impl<'a> Profile<'a> for CursorProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
@@ -57,7 +75,7 @@ impl<'a> Profile<'a> for Cursor {
     }
 }
 
-impl Cursor {
+impl CursorProfile {
     pub fn new(
         session_id: i32,
         position: Point2D<f32>,
