@@ -30,18 +30,18 @@ impl<'a> TryFrom<&'a OscMessage> for Cursor {
     }
 }
 
-impl Into<OscPacket> for Cursor {
-    fn into(self) -> OscPacket {
+impl From<Cursor> for OscPacket {
+    fn from(val: Cursor) -> Self {
         OscPacket::Message(OscMessage {
             addr: "/tuio/2Dcur".into(),
             args: vec![
                 OscType::String("set".into()),
-                OscType::Int(self.session_id),
-                OscType::Float(self.position.x),
-                OscType::Float(self.position.y),
-                OscType::Float(self.velocity.x),
-                OscType::Float(self.velocity.y),
-                OscType::Float(self.acceleration),
+                OscType::Int(val.session_id),
+                OscType::Float(val.position.x),
+                OscType::Float(val.position.y),
+                OscType::Float(val.velocity.x),
+                OscType::Float(val.velocity.y),
+                OscType::Float(val.acceleration),
             ],
         })
     }

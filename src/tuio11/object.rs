@@ -47,22 +47,22 @@ impl<'a> TryFrom<&'a OscMessage> for Object {
     }
 }
 
-impl Into<OscPacket> for Object {
-    fn into(self) -> OscPacket {
+impl From<Object> for OscPacket {
+    fn from(val: Object) -> Self {
         OscPacket::Message(OscMessage {
             addr: "/tuio/2Dobj".into(),
             args: vec![
                 OscType::String("set".into()),
-                OscType::Int(self.session_id),
-                OscType::Int(self.class_id),
-                OscType::Float(self.position.x),
-                OscType::Float(self.position.y),
-                OscType::Float(self.angle),
-                OscType::Float(self.velocity.x),
-                OscType::Float(self.velocity.y),
-                OscType::Float(self.rotation_speed),
-                OscType::Float(self.acceleration),
-                OscType::Float(self.rotation_acceleration),
+                OscType::Int(val.session_id),
+                OscType::Int(val.class_id),
+                OscType::Float(val.position.x),
+                OscType::Float(val.position.y),
+                OscType::Float(val.angle),
+                OscType::Float(val.velocity.x),
+                OscType::Float(val.velocity.y),
+                OscType::Float(val.rotation_speed),
+                OscType::Float(val.acceleration),
+                OscType::Float(val.rotation_acceleration),
             ],
         })
     }
