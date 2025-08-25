@@ -10,7 +10,7 @@ use rosc::OscPacket;
 
 use crate::{
     common::{
-        osc_receiver::{OscReceiver, UdpReceiver},
+        osc_receiver::{OscReceiver, UdpReceiver, WebsocketReceiver},
         tuio_time::TuioTime,
     },
     tuio11::{self, blob::Blob, cursor::Cursor, object::Object, osc_decoder_encoder::OscDecoder},
@@ -20,7 +20,7 @@ pub struct Client {
     current_frame: Cell<i32>,
     current_time: Cell<TuioTime>,
     cursors: HashMap<i32, Cursor>,
-    receiver: Arc<UdpReceiver>,
+    receiver: Arc<WebsocketReceiver>,
     buffer: Arc<Mutex<ConstGenericRingBuffer<OscPacket, 64>>>,
 }
 
@@ -30,13 +30,12 @@ impl Client {
             current_frame: (-1).into(),
             current_time: Cell::new(TuioTime::from_system_time()?),
             cursors: HashMap::new(),
-            receiver: Arc::new(UdpReceiver::new(remote, port)?),
+            receiver: Arc::new(WebsocketReceiver::connect(remote, port)?),
             buffer: Default::default(),
         })
     }
 
     pub fn connect(&self) -> anyhow::Result<()> {
-        self.receiver.connect()?;
         let receiver = self.receiver.clone();
         let buffer = self.buffer.clone();
         thread::spawn(move || {
@@ -44,10 +43,11 @@ impl Client {
                 buffer.lock().unwrap().enqueue(packet);
             }
         });
+
         Ok(())
     }
 
-    pub fn disconnect(&self) -> anyhow::Result<()> {
+    pub fn disconnect(&self) {
         self.receiver.disconnect()
     }
 
