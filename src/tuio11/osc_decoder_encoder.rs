@@ -103,7 +103,7 @@ impl TuioBundle {
             self.fseq = *fseq;
             Ok(())
         } else {
-            return Err(TuioError::MissingArguments(message.clone()).into());
+            Err(TuioError::MissingArguments(message.clone()))
         }
     }
 }
@@ -124,10 +124,10 @@ impl OscDecoder {
 
                 match message.args.first() {
                     Some(OscType::String(arg)) => match arg.as_str() {
-                        "source" => tuio_bundle.set_source(&message),
-                        "alive" => tuio_bundle.set_alive(&message),
-                        "set" => tuio_bundle.set_set(&message)?,
-                        "fseq" => tuio_bundle.set_fseq(&message)?,
+                        "source" => tuio_bundle.set_source(message),
+                        "alive" => tuio_bundle.set_alive(message),
+                        "set" => tuio_bundle.set_set(message)?,
+                        "fseq" => tuio_bundle.set_fseq(message)?,
                         _ => return Err(TuioError::UnknownMessageType(message.clone())),
                     },
                     None => return Err(TuioError::EmptyMessage(message.clone())),
@@ -163,7 +163,7 @@ impl OscEncoder {
             addr: T::address(),
             args: vec![OscType::String("alive".into())]
                 .into_iter()
-                .chain(session_ids.into_iter())
+                .chain(session_ids)
                 .collect(),
         });
         let mut preamble = vec![alive_message];
@@ -188,7 +188,7 @@ impl OscEncoder {
             timetag: OscTime::try_from(SystemTime::now()).unwrap(),
             content: preamble
                 .into_iter()
-                .chain(set_messages.into_iter())
+                .chain(set_messages)
                 .chain(iter::once(frame_message))
                 .collect(),
         }
