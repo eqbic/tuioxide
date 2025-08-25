@@ -21,10 +21,10 @@ impl<'a> TryFrom<&'a OscMessage> for Cursor {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let session_id = extract_int(&message, 1)?;
-        let position = Point2D::new(extract_float(&message, 2)?, extract_float(&message, 3)?);
-        let velocity = Vector2D::new(extract_float(&message, 4)?, extract_float(&message, 5)?);
-        let acceleration = extract_float(&message, 6)?;
+        let session_id = extract_int(message, 1)?;
+        let position = Point2D::new(extract_float(message, 2)?, extract_float(message, 3)?);
+        let velocity = Vector2D::new(extract_float(message, 4)?, extract_float(message, 5)?);
+        let acceleration = extract_float(message, 6)?;
         let cursor = Cursor::new(session_id, position, velocity, acceleration);
         Ok(cursor)
     }

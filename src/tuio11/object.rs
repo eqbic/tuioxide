@@ -25,14 +25,14 @@ impl<'a> TryFrom<&'a OscMessage> for Object {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let session_id = extract_int(&message, 1)?;
-        let class_id = extract_int(&message, 2)?;
-        let position = Point2D::new(extract_float(&message, 3)?, extract_float(&message, 4)?);
-        let angle = extract_float(&message, 5)?;
-        let velocity = Vector2D::new(extract_float(&message, 6)?, extract_float(&message, 7)?);
-        let rotation_speed = extract_float(&message, 8)?;
-        let acceleration = extract_float(&message, 9)?;
-        let rotation_acceleration = extract_float(&message, 10)?;
+        let session_id = extract_int(message, 1)?;
+        let class_id = extract_int(message, 2)?;
+        let position = Point2D::new(extract_float(message, 3)?, extract_float(message, 4)?);
+        let angle = extract_float(message, 5)?;
+        let velocity = Vector2D::new(extract_float(message, 6)?, extract_float(message, 7)?);
+        let rotation_speed = extract_float(message, 8)?;
+        let acceleration = extract_float(message, 9)?;
+        let rotation_acceleration = extract_float(message, 10)?;
         let object = Object::new(
             session_id,
             class_id,

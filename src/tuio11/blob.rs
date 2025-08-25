@@ -26,15 +26,15 @@ impl<'a> TryFrom<&'a OscMessage> for Blob {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let session_id = extract_int(&message, 1)?;
-        let position = Point2D::new(extract_float(&message, 2)?, extract_float(&message, 3)?);
-        let velocity = Vector2D::new(extract_float(&message, 4)?, extract_float(&message, 5)?);
-        let acceleration = extract_float(&message, 6)?;
-        let angle = extract_float(&message, 7)?;
-        let size = Vector2D::new(extract_float(&message, 8)?, extract_float(&message, 9)?);
-        let area = extract_float(&message, 10)?;
-        let rotation_speed = extract_float(&message, 11)?;
-        let rotation_acceleration = extract_float(&message, 12)?;
+        let session_id = extract_int(message, 1)?;
+        let position = Point2D::new(extract_float(message, 2)?, extract_float(message, 3)?);
+        let velocity = Vector2D::new(extract_float(message, 4)?, extract_float(message, 5)?);
+        let acceleration = extract_float(message, 6)?;
+        let angle = extract_float(message, 7)?;
+        let size = Vector2D::new(extract_float(message, 8)?, extract_float(message, 9)?);
+        let area = extract_float(message, 10)?;
+        let rotation_speed = extract_float(message, 11)?;
+        let rotation_acceleration = extract_float(message, 12)?;
         let blob = Blob::new(
             session_id,
             position,
