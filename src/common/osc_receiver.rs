@@ -1,5 +1,4 @@
 use std::{
-    cell::RefCell,
     io::Error,
     net::{Ipv4Addr, SocketAddrV4, TcpStream, UdpSocket},
     sync::{Arc, Mutex},
@@ -18,13 +17,14 @@ where
     fn recv(&self) -> anyhow::Result<P>;
 }
 
-pub struct WebsocketReceiver {
+#[derive(Debug)]
+pub struct WebsocketOscReceiver {
     socket: Mutex<WebSocket<MaybeTlsStream<TcpStream>>>,
 }
 
-impl WebsocketReceiver {}
+impl WebsocketOscReceiver {}
 
-impl OscReceiver<OscPacket> for WebsocketReceiver {
+impl OscReceiver<OscPacket> for WebsocketOscReceiver {
     fn connect(remote: Ipv4Addr, port: u16) -> anyhow::Result<Self> {
         let uri = format!("ws://{remote}:{port}").parse()?;
         let builder = ClientRequestBuilder::new(uri);
@@ -57,17 +57,14 @@ impl OscReceiver<OscPacket> for WebsocketReceiver {
     }
 }
 
-pub struct UdpReceiver {
-    remote: Ipv4Addr,
-    port: u16,
+#[derive(Debug)]
+pub struct UdpOscReceiver {
     socket: Arc<UdpSocket>,
 }
 
-impl OscReceiver<OscPacket> for UdpReceiver {
+impl OscReceiver<OscPacket> for UdpOscReceiver {
     fn connect(remote: Ipv4Addr, port: u16) -> anyhow::Result<Self> {
         Ok(Self {
-            remote,
-            port,
             socket: Arc::new(UdpSocket::bind(SocketAddrV4::new(remote, port))?),
         })
     }

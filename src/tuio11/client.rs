@@ -9,28 +9,31 @@ use ringbuffer::{ConstGenericRingBuffer, RingBuffer};
 use rosc::OscPacket;
 
 use crate::{
-    common::{
-        osc_receiver::{OscReceiver, UdpReceiver, WebsocketReceiver},
-        tuio_time::TuioTime,
-    },
-    tuio11::{self, blob::Blob, cursor::Cursor, object::Object, osc_decoder_encoder::OscDecoder},
+    common::{osc_receiver::OscReceiver, tuio_time::TuioTime},
+    tuio11::{self, cursor::Cursor, osc_decoder_encoder::OscDecoder},
 };
 
-pub struct Client {
+pub struct Client<R>
+where
+    R: OscReceiver<OscPacket> + Send + Sync + 'static,
+{
     current_frame: Cell<i32>,
     current_time: Cell<TuioTime>,
     cursors: HashMap<i32, Cursor>,
-    receiver: Arc<WebsocketReceiver>,
+    receiver: Arc<R>,
     buffer: Arc<Mutex<ConstGenericRingBuffer<OscPacket, 64>>>,
 }
 
-impl Client {
+impl<R> Client<R>
+where
+    R: OscReceiver<OscPacket> + Send + Sync + 'static,
+{
     pub fn new(remote: std::net::Ipv4Addr, port: u16) -> anyhow::Result<Self> {
         Ok(Self {
             current_frame: (-1).into(),
             current_time: Cell::new(TuioTime::from_system_time()?),
             cursors: HashMap::new(),
-            receiver: Arc::new(WebsocketReceiver::connect(remote, port)?),
+            receiver: Arc::new(R::connect(remote, port)?),
             buffer: Default::default(),
         })
     }
