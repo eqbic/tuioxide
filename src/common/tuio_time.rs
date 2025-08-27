@@ -54,7 +54,7 @@ impl ops::Add<TuioTime> for TuioTime {
         let mut seconds = self.seconds + time.seconds;
         let mut micro_seconds = self.micro_seconds + time.micro_seconds;
         seconds += micro_seconds / MICRO_PER_SECOND;
-        micro_seconds = micro_seconds % MILLI_PER_SECOND;
+        micro_seconds %= MILLI_PER_SECOND;
         Self {
             seconds,
             micro_seconds,
