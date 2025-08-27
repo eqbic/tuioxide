@@ -6,7 +6,7 @@ use crate::tuio11::profile::Profile;
 
 use crate::{
     common::errors::TuioError,
-    tuio11::{blob::Blob, cursor::CursorProfile, object::Object},
+    tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
 };
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -19,18 +19,18 @@ pub enum TuioBundleType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Set {
+pub enum EntityType {
     Cursor(Vec<CursorProfile>),
-    Object(Vec<Object>),
-    Blob(Vec<Blob>),
+    Object(Vec<ObjectProfile>),
+    Blob(Vec<BlobProfile>),
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct TuioBundle {
     tuio_type: TuioBundleType,
-    souce: Option<String>,
+    source: Option<String>,
     alive: Vec<i32>,
-    set: Option<Set>,
+    set: Option<EntityType>,
     fseq: i32,
 }
 
@@ -40,14 +40,14 @@ impl TuioBundle {
     }
 
     pub fn source(&self) -> &Option<String> {
-        &self.souce
+        &self.source
     }
 
     pub fn alive(&self) -> &Vec<i32> {
         &self.alive
     }
 
-    pub fn tuio_entities(&self) -> &Option<Set> {
+    pub fn tuio_entities(&self) -> &Option<EntityType> {
         &self.set
     }
 
@@ -56,7 +56,7 @@ impl TuioBundle {
     }
 
     fn set_source(&mut self, message: &OscMessage) {
-        self.souce = message.args.get(1).and_then(|arg| arg.clone().string());
+        self.source = message.args.get(1).and_then(|arg| arg.clone().string());
     }
 
     fn set_alive(&mut self, message: &OscMessage) {
@@ -71,7 +71,9 @@ impl TuioBundle {
     fn set_set(&mut self, message: &OscMessage) -> Result<(), TuioError> {
         match &self.tuio_type {
             TuioBundleType::Cursor => {
-                if let Set::Cursor(set) = self.set.get_or_insert(Set::Cursor(Vec::new())) {
+                if let EntityType::Cursor(set) =
+                    self.set.get_or_insert(EntityType::Cursor(Vec::new()))
+                {
                     if message.args.len() != 7 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
@@ -80,20 +82,24 @@ impl TuioBundle {
                 }
             }
             TuioBundleType::Object => {
-                if let Set::Object(set) = self.set.get_or_insert(Set::Object(Vec::new())) {
+                if let EntityType::Object(set) =
+                    self.set.get_or_insert(EntityType::Object(Vec::new()))
+                {
                     if message.args.len() != 11 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
-                    let object = Object::try_from(message)?;
+                    let object = ObjectProfile::try_from(message)?;
                     set.push(object);
                 }
             }
             TuioBundleType::Blob => {
-                if let Set::Blob(set) = self.set.get_or_insert(Set::Object(Vec::new())) {
+                if let EntityType::Blob(set) =
+                    self.set.get_or_insert(EntityType::Object(Vec::new()))
+                {
                     if message.args.len() != 13 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
-                    let blob = Blob::try_from(message)?;
+                    let blob = BlobProfile::try_from(message)?;
                     set.push(blob);
                 }
             }
@@ -203,7 +209,7 @@ impl OscEncoder {
 mod tests {
     use euclid::default::{Point2D, Vector2D};
 
-    use crate::tuio11::{cursor::CursorProfile, object::Object};
+    use crate::tuio11::{cursor::CursorProfile, object::ObjectProfile};
 
     use super::*;
 
@@ -216,7 +222,7 @@ mod tests {
             CursorProfile::new(6, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
         ];
         let objects = vec![
-            Object::new(
+            ObjectProfile::new(
                 8,
                 3,
                 Point2D::new(0.2, 0.5),
@@ -226,7 +232,7 @@ mod tests {
                 1.4,
                 3.5,
             ),
-            Object::new(
+            ObjectProfile::new(
                 12,
                 27,
                 Point2D::new(0.2, 0.5),
@@ -252,7 +258,7 @@ mod tests {
         assert_eq!(tuio_cursor_bundle.source(), &Some("test".into()));
         assert_eq!(
             tuio_cursor_bundle.tuio_entities(),
-            &Some(Set::Cursor(cursors))
+            &Some(EntityType::Cursor(cursors))
         );
 
         assert_eq!(tuio_object_bundle.fseq(), 12);
@@ -260,7 +266,7 @@ mod tests {
         assert_eq!(tuio_object_bundle.source(), &Some("test".into()));
         assert_eq!(
             tuio_object_bundle.tuio_entities(),
-            &Some(Set::Object(objects))
+            &Some(EntityType::Object(objects))
         );
     }
 }

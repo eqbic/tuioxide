@@ -22,8 +22,9 @@ impl Cursor {
         Self { container, cursor }
     }
 
-    pub fn update(&mut self, time: &TuioTime, cursor: CursorProfile) {
+    pub fn update(&mut self, time: &TuioTime, cursor: &CursorProfile) {
         self.container.update(time);
+        self.cursor = *cursor;
     }
 }
 

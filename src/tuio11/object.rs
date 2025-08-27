@@ -5,12 +5,31 @@ use crate::{
     common::{
         errors::TuioError,
         osc_utils::{extract_float, extract_int},
+        tuio_time::TuioTime,
     },
-    tuio11::profile::Profile,
+    tuio11::{container::Container, profile::Profile},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Object {
+    container: Container,
+    object: ObjectProfile,
+}
+
+impl Object {
+    pub fn new(start_time: &TuioTime, object: ObjectProfile) -> Self {
+        let container = Container::new(start_time);
+        Self { container, object }
+    }
+
+    pub fn update(&mut self, time: &TuioTime, object: &ObjectProfile) {
+        self.container.update(time);
+        self.object = *object;
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ObjectProfile {
     session_id: i32,
     class_id: i32,
     position: Point2D<f32>,
@@ -21,7 +40,7 @@ pub struct Object {
     rotation_acceleration: f32,
 }
 
-impl<'a> TryFrom<&'a OscMessage> for Object {
+impl<'a> TryFrom<&'a OscMessage> for ObjectProfile {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
@@ -33,7 +52,7 @@ impl<'a> TryFrom<&'a OscMessage> for Object {
         let rotation_speed = extract_float(message, 8)?;
         let acceleration = extract_float(message, 9)?;
         let rotation_acceleration = extract_float(message, 10)?;
-        let object = Object::new(
+        let object = ObjectProfile::new(
             session_id,
             class_id,
             position,
@@ -47,10 +66,10 @@ impl<'a> TryFrom<&'a OscMessage> for Object {
     }
 }
 
-impl From<Object> for OscPacket {
-    fn from(val: Object) -> Self {
+impl From<ObjectProfile> for OscPacket {
+    fn from(val: ObjectProfile) -> Self {
         OscPacket::Message(OscMessage {
-            addr: Object::address(),
+            addr: ObjectProfile::address(),
             args: vec![
                 OscType::String("set".into()),
                 OscType::Int(val.session_id),
@@ -68,7 +87,7 @@ impl From<Object> for OscPacket {
     }
 }
 
-impl<'a> Profile<'a> for Object {
+impl<'a> Profile<'a> for ObjectProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
@@ -78,7 +97,7 @@ impl<'a> Profile<'a> for Object {
     }
 }
 
-impl Object {
+impl ObjectProfile {
     pub fn new(
         session_id: i32,
         class_id: i32,

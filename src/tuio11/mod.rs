@@ -8,3 +8,4 @@ pub mod processor;
 pub mod profile;
 pub mod rotation;
 pub mod translation;
+pub mod tuio_entity;

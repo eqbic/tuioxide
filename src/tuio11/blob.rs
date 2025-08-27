@@ -5,12 +5,31 @@ use crate::{
     common::{
         errors::TuioError,
         osc_utils::{extract_float, extract_int},
+        tuio_time::TuioTime,
     },
-    tuio11::profile::Profile,
+    tuio11::{container::Container, profile::Profile},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Blob {
+    container: Container,
+    blob: BlobProfile,
+}
+
+impl Blob {
+    pub fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
+        let container = Container::new(start_time);
+        Self { container, blob }
+    }
+
+    pub fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
+        self.container.update(time);
+        self.blob = *blob;
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct BlobProfile {
     session_id: i32,
     position: Point2D<f32>,
     velocity: Vector2D<f32>,
@@ -22,7 +41,7 @@ pub struct Blob {
     rotation_acceleration: f32,
 }
 
-impl<'a> TryFrom<&'a OscMessage> for Blob {
+impl<'a> TryFrom<&'a OscMessage> for BlobProfile {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
@@ -35,7 +54,7 @@ impl<'a> TryFrom<&'a OscMessage> for Blob {
         let area = extract_float(message, 10)?;
         let rotation_speed = extract_float(message, 11)?;
         let rotation_acceleration = extract_float(message, 12)?;
-        let blob = Blob::new(
+        let blob = BlobProfile::new(
             session_id,
             position,
             angle,
@@ -50,10 +69,10 @@ impl<'a> TryFrom<&'a OscMessage> for Blob {
     }
 }
 
-impl From<Blob> for OscPacket {
-    fn from(val: Blob) -> Self {
+impl From<BlobProfile> for OscPacket {
+    fn from(val: BlobProfile) -> Self {
         OscPacket::Message(OscMessage {
-            addr: Blob::address(),
+            addr: BlobProfile::address(),
             args: vec![
                 OscType::String("set".into()),
                 OscType::Int(val.session_id),
@@ -73,7 +92,7 @@ impl From<Blob> for OscPacket {
     }
 }
 
-impl<'a> Profile<'a> for Blob {
+impl<'a> Profile<'a> for BlobProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
@@ -83,7 +102,7 @@ impl<'a> Profile<'a> for Blob {
     }
 }
 
-impl Blob {
+impl BlobProfile {
     pub fn new(
         session_id: i32,
         position: Point2D<f32>,
