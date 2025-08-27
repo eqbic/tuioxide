@@ -98,6 +98,7 @@ impl<'a> Profile<'a> for ObjectProfile {
 }
 
 impl ObjectProfile {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         session_id: i32,
         class_id: i32,

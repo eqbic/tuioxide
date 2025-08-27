@@ -103,6 +103,7 @@ impl<'a> Profile<'a> for BlobProfile {
 }
 
 impl BlobProfile {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         session_id: i32,
         position: Point2D<f32>,
