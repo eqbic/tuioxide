@@ -387,7 +387,17 @@ dependencies = [
  "ringbuffer",
  "rosc",
  "thiserror",
+ "tuioxide-macros",
  "tungstenite",
+]
+
+[[package]]
+name = "tuioxide-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
