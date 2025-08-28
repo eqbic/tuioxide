@@ -2,32 +2,33 @@ use tuioxide_macros::profile;
 
 use crate::common::{container::Container, tuio_time::TuioTime};
 
-pub struct Token {
+pub struct Bounds {
     container: Container,
-    token: TokenProfile,
+    bounds: BoundsProfile,
 }
 
-impl Token {
-    pub fn new(start_time: &TuioTime, token: TokenProfile) -> Self {
+impl Bounds {
+    pub fn new(start_time: &TuioTime, bounds: BoundsProfile) -> Self {
         let container = Container::new(start_time);
-        Self { container, token }
+        Self { container, bounds }
     }
 
-    pub fn update(&mut self, time: &TuioTime, token: &TokenProfile) {
+    pub fn update(&mut self, time: &TuioTime, bounds: &BoundsProfile) {
         self.container.update(time);
-        self.token = *token;
+        self.bounds = *bounds;
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-#[profile("/tuio2/tok")]
-pub struct TokenProfile {
+#[profile("/tuio2/bnd")]
+pub struct BoundsProfile {
     session_id: i32,
-    type_user_id: i32,
-    component_id: i32,
     position_x: f32,
     position_y: f32,
     angle: f32,
+    width: f32,
+    height: f32,
+    area: f32,
     velocity_x: Option<f32>,
     velocity_y: Option<f32>,
     angle_speed: Option<f32>,

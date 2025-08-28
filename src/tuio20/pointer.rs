@@ -19,7 +19,7 @@ impl Pointer {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 #[profile("/tuio2/ptr")]
 pub struct PointerProfile {
     session_id: i32,
@@ -65,7 +65,7 @@ mod tests {
 
         let pointer = match PointerProfile::from_osc_message(&msg) {
             Ok(pointer) => pointer,
-            Err(error) => panic!("{:?}", error),
+            Err(error) => panic!("{error:?}"),
         };
 
         assert_eq!(pointer.component_id, 3);
