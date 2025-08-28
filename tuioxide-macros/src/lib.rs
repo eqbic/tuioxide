@@ -38,31 +38,89 @@ pub fn profile(args: TokenStream, input: TokenStream) -> TokenStream {
 
     // Generate parsing logic for required fields
     let required_parsers: Vec<_> = required_fields.iter().map(|(i, field_name, field_type)| {
-        quote! {
-            #field_name: {
-                let arg = args.get(#i)
-                    .ok_or_else(|| format!("Missing required argument {} for field {}", #i, stringify!(#field_name)))?;
-                match arg {
-                    rosc::OscType::Int(val) => *val as #field_type,
-                    rosc::OscType::Float(val) => *val as #field_type,
-                    _ => return Err(format!("Invalid type for required field {}", stringify!(#field_name))),
+        let type_str = quote!(#field_type).to_string();
+
+        if type_str.contains("String") {
+            quote! {
+                #field_name: {
+                    let arg = args.get(#i)
+                        .ok_or_else(|| format!("Missing required argument {} for field {}", #i, stringify!(#field_name)))?;
+                    match arg {
+                        rosc::OscType::String(val) => val.clone(),
+                        _ => return Err(format!("Expected String for field {}, got {:?}", stringify!(#field_name), arg)),
+                    }
+                }
+            }
+        } else if type_str.contains("i32") {
+            quote! {
+                #field_name: {
+                    let arg = args.get(#i)
+                        .ok_or_else(|| format!("Missing required argument {} for field {}", #i, stringify!(#field_name)))?;
+                    match arg {
+                        rosc::OscType::Int(val) => *val,
+                        rosc::OscType::Float(val) => *val as i32,
+                        _ => return Err(format!("Expected Int for field {}, got {:?}", stringify!(#field_name), arg)),
+                    }
+                }
+            }
+        } else if type_str.contains("f32") {
+            quote! {
+                #field_name: {
+                    let arg = args.get(#i)
+                        .ok_or_else(|| format!("Missing required argument {} for field {}", #i, stringify!(#field_name)))?;
+                    match arg {
+                        rosc::OscType::Float(val) => *val,
+                        rosc::OscType::Int(val) => *val as f32,
+                        _ => return Err(format!("Expected Float for field {}, got {:?}", stringify!(#field_name), arg)),
+                    }
+                }
+            }
+        } else {
+            // Fallback for other types
+            quote! {
+                #field_name: {
+                    let arg = args.get(#i)
+                        .ok_or_else(|| format!("Missing required argument {} for field {}", #i, stringify!(#field_name)))?;
+                    match arg {
+                        rosc::OscType::Int(val) => *val as #field_type,
+                        rosc::OscType::Float(val) => *val as #field_type,
+                        _ => return Err(format!("Invalid type for required field {}", stringify!(#field_name))),
+                    }
                 }
             }
         }
     }).collect();
 
     // Generate parsing logic for optional fields
-    let optional_parsers: Vec<_> = optional_fields.iter().map(|(i, field_name, _field_type)| {
-        quote! {
-            #field_name: if args.len() > #i {
-                match args.get(#i) {
-                    Some(rosc::OscType::Int(val)) => Some(*val as f32),
-                    Some(rosc::OscType::Float(val)) => Some(*val),
-                    Some(_) => return Err(format!("Invalid type for optional field {}", stringify!(#field_name))),
-                    None => None,
+    let optional_parsers: Vec<_> = optional_fields.iter().map(|(i, field_name, field_type)| {
+        // Get the inner type of Option<T>
+        let inner_type = get_option_inner_type(field_type);
+        let inner_type_str = quote!(#inner_type).to_string();
+
+        if inner_type_str.contains("String") {
+            quote! {
+                #field_name: if args.len() > #i {
+                    match args.get(#i) {
+                        Some(rosc::OscType::String(val)) => Some(val.clone()),
+                        Some(_) => return Err(format!("Expected String for optional field {}", stringify!(#field_name))),
+                        None => None,
+                    }
+                } else {
+                    None
                 }
-            } else {
-                None
+            }
+        } else {
+            quote! {
+                #field_name: if args.len() > #i {
+                    match args.get(#i) {
+                        Some(rosc::OscType::Int(val)) => Some(*val as f32),
+                        Some(rosc::OscType::Float(val)) => Some(*val),
+                        Some(_) => return Err(format!("Invalid type for optional field {}", stringify!(#field_name))),
+                        None => None,
+                    }
+                } else {
+                    None
+                }
             }
         }
     }).collect();
@@ -75,11 +133,25 @@ pub fn profile(args: TokenStream, input: TokenStream) -> TokenStream {
             let field_type = &field.ty;
 
             if is_option_type(field_type) {
-                quote! {
-                    if let Some(val) = self.#field_name {
-                        Some(rosc::OscType::Float(val))
-                    } else {
-                        None
+                // For optional fields, we need to check the inner type
+                let inner_type = get_option_inner_type(field_type);
+                let inner_type_str = quote!(#inner_type).to_string();
+
+                if inner_type_str.contains("String") {
+                    quote! {
+                        if let Some(ref val) = self.#field_name {
+                            Some(rosc::OscType::String(val.clone()))
+                        } else {
+                            None
+                        }
+                    }
+                } else {
+                    quote! {
+                        if let Some(val) = self.#field_name {
+                            Some(rosc::OscType::Float(val))
+                        } else {
+                            None
+                        }
                     }
                 }
             } else {
@@ -88,6 +160,8 @@ pub fn profile(args: TokenStream, input: TokenStream) -> TokenStream {
                     quote! { Some(rosc::OscType::Int(self.#field_name)) }
                 } else if type_str.contains("f32") {
                     quote! { Some(rosc::OscType::Float(self.#field_name)) }
+                } else if type_str.contains("String") {
+                    quote! { Some(rosc::OscType::String(self.#field_name.clone())) }
                 } else {
                     quote! { Some(rosc::OscType::Float(self.#field_name as f32)) }
                 }
@@ -138,8 +212,7 @@ pub fn profile(args: TokenStream, input: TokenStream) -> TokenStream {
                         if let Some(osc_arg) = arg {
                             args.push(osc_arg.clone());
                         } else {
-                            // For None values in the middle, we might want to add a default
-                            // This depends on TUIO protocol requirements
+                            // For None values in the middle, add appropriate default based on expected type
                             args.push(rosc::OscType::Float(0.0));
                         }
                     }
@@ -172,4 +245,20 @@ fn is_option_type(ty: &Type) -> bool {
         }
     }
     false
+}
+
+// Helper function to extract the inner type from Option<T>
+fn get_option_inner_type(ty: &Type) -> &Type {
+    if let Type::Path(type_path) = ty {
+        if let Some(segment) = type_path.path.segments.last() {
+            if segment.ident == "Option" {
+                if let syn::PathArguments::AngleBracketed(args) = &segment.arguments {
+                    if let Some(syn::GenericArgument::Type(inner_ty)) = args.args.first() {
+                        return inner_ty;
+                    }
+                }
+            }
+        }
+    }
+    ty // fallback to original type
 }
