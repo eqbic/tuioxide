@@ -3,11 +3,12 @@ use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::{
     common::{
+        container::Container,
         errors::TuioError,
         osc_utils::{extract_float, extract_int},
         tuio_time::TuioTime,
     },
-    tuio11::{container::Container, profile::Profile},
+    tuio11::profile::Profile,
 };
 
 #[derive(Debug, Clone, Copy)]
