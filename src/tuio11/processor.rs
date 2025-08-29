@@ -84,17 +84,17 @@ where
     fn process_packet(&self, packet: OscPacket) -> anyhow::Result<()> {
         if let OscPacket::Bundle(bundle) = packet {
             let tuio_bundle = OscDecoder::decode_bundle(bundle)?;
-            let alive: HashSet<i32> = tuio_bundle.alive().iter().copied().collect();
+            let alive = tuio_bundle.alive();
             let current_time = self.current_time.get();
             if self.update_frame(tuio_bundle.fseq())? {
                 match tuio_bundle.profile_type() {
                     TuioBundleType::Cursor => {
                         let mut current_cursors = self.cursors.borrow_mut();
-                        process_cursors(&mut current_cursors, &alive, &tuio_bundle, &current_time);
+                        process_cursors(&mut current_cursors, alive, &tuio_bundle, &current_time);
                     }
                     TuioBundleType::Object => {
                         let mut current_objects = self.objects.borrow_mut();
-                        process_objects(&mut current_objects, &alive, &tuio_bundle, &current_time);
+                        process_objects(&mut current_objects, alive, &tuio_bundle, &current_time);
                     }
                     TuioBundleType::Blob => {}
                     TuioBundleType::Unknown => {}

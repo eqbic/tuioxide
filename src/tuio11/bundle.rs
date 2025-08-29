@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use rosc::{OscMessage, OscType};
 
 use crate::{
@@ -25,7 +27,7 @@ pub enum EntityType {
 pub struct TuioBundle {
     tuio_type: TuioBundleType,
     source: Option<String>,
-    alive: Vec<i32>,
+    alive: HashSet<i32>,
     set: Option<EntityType>,
     fseq: i32,
 }
@@ -39,7 +41,7 @@ impl TuioBundle {
         &self.source
     }
 
-    pub fn alive(&self) -> &Vec<i32> {
+    pub fn alive(&self) -> &HashSet<i32> {
         &self.alive
     }
 
