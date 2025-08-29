@@ -1,5 +1,4 @@
 pub mod blob;
-pub mod client;
 pub mod cursor;
 pub mod object;
 pub mod osc_decoder_encoder;

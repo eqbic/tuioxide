@@ -1,24 +1,20 @@
 use std::net::Ipv4Addr;
 
-use tuioxide::{
-    common::osc_receiver::{UdpOscReceiver, WebsocketOscReceiver},
-    tuio11::client::Client,
-};
+use tuioxide::{common::osc_receiver::UdpOscReceiver, tuio11::processor::Processor};
 
 fn main() -> anyhow::Result<()> {
-    let client = Client::<UdpOscReceiver>::new(Ipv4Addr::LOCALHOST, 3333)?;
-    client.connect()?;
+    let tuio11_processor = Processor::<UdpOscReceiver>::new(Ipv4Addr::LOCALHOST, 3333)?;
+    tuio11_processor.connect()?;
     loop {
-        client.update()?;
-        let cursors = client.cursors();
-        let objects = client.objects();
+        tuio11_processor.update()?;
+        let cursors = tuio11_processor.cursors();
+        let objects = tuio11_processor.objects();
         if !&cursors.is_empty() {
-            println!("{:?}", cursors);
+            println!("{cursors:?}");
         }
 
         if !&objects.is_empty() {
-            println!("{:?}", objects);
+            println!("{objects:?}");
         }
     }
-    Ok(())
 }
