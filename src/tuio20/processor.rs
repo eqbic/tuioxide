@@ -45,7 +45,9 @@ where
     }
 
     fn process_packet(&self, packet: OscPacket) -> anyhow::Result<()> {
-        println!("{packet:?}");
+        if let OscPacket::Bundle(bundle) = packet {
+            
+        }
         Ok(())
     }
 }
