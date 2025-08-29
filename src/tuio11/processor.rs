@@ -10,9 +10,10 @@ use rosc::OscPacket;
 use crate::{
     common::{client::Client, osc_receiver::OscReceiver, tuio_time::TuioTime},
     tuio11::{
+        bundle::{EntityType, TuioBundle, TuioBundleType},
         cursor::Cursor,
         object::Object,
-        osc_decoder_encoder::{EntityType, OscDecoder, TuioBundle, TuioBundleType},
+        osc_decoder_encoder::OscDecoder,
         profile::Profile,
     },
 };
