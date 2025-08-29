@@ -6,7 +6,10 @@ use std::{
 
 use rosc::OscPacket;
 
-use crate::common::{client::Client, osc_receiver::OscReceiver, tuio_time::TuioTime};
+use crate::{
+    common::{client::Client, osc_receiver::OscReceiver, tuio_time::TuioTime},
+    tuio20::osc_decoder::OscDecoder,
+};
 
 pub struct Processor<R>
 where
@@ -46,7 +49,8 @@ where
 
     fn process_packet(&self, packet: OscPacket) -> anyhow::Result<()> {
         if let OscPacket::Bundle(bundle) = packet {
-            
+            let tuio_bundle = OscDecoder::decode_bundle(bundle)?;
+            println!("{tuio_bundle:?}");
         }
         Ok(())
     }
