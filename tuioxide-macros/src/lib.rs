@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, LitStr, Path, Type, parse_macro_input};
+use syn::{Data, DeriveInput, Fields, LitStr, Type, parse_macro_input};
 
 #[proc_macro_attribute]
 pub fn profile(args: TokenStream, input: TokenStream) -> TokenStream {
