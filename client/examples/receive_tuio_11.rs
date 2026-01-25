@@ -1,31 +1,38 @@
-// use std::net::Ipv4Addr;
-
-// use tuioxide::{common::osc_receiver::UdpOscReceiver, tuio11::processor::Processor};
-
-// fn main() -> anyhow::Result<()> {
-//     let tuio11_processor = Processor::<UdpOscReceiver>::new(Ipv4Addr::LOCALHOST, 3333)?;
-//     tuio11_processor.connect()?;
-//     loop {
-//         tuio11_processor.update()?;
-//         let cursors = tuio11_processor.cursors();
-//         let objects = tuio11_processor.objects();
-//         if !&cursors.is_empty() {
-//             println!("{cursors:?}");
-//         }
-
-//         if !&objects.is_empty() {
-//             println!("{objects:?}");
-//         }
-//     }
-// }
-
+use client::{common::osc_receiver::UdpOscReceiver, tuio11::processor::Processor};
+use log::{error, info};
 use std::net::Ipv4Addr;
 
-use client::tuio11::client::{Client, UdpReceiver};
-
 fn main() {
-    let mut client = Client::<UdpReceiver>::connect(Ipv4Addr::LOCALHOST, 3333).unwrap();
+    env_logger::builder()
+        .filter_level(log::LevelFilter::Info)
+        .init();
+
+    let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
+        Ok(receiver) => receiver,
+        Err(error) => {
+            error!("{error}");
+            return;
+        }
+    };
+    let processor = Processor::default();
     loop {
-        client.update();
+        let packet = match receiver.recv() {
+            Ok(packet) => packet,
+            Err(error) => {
+                error!("{error}");
+                continue;
+            }
+        };
+        processor.update(packet);
+        let cursors = processor.cursors();
+        let objects = processor.objects();
+
+        if !&cursors.is_empty() {
+            info!("{cursors:?}");
+        }
+
+        if !&objects.is_empty() {
+            info!("{objects:?}");
+        }
     }
 }
