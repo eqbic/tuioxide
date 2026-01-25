@@ -36,9 +36,9 @@ pub fn extract_time(message: &OscMessage, index: usize) -> Result<TuioTime, Tuio
     })
 }
 
-pub fn extract_string(message: &OscMessage, index: usize) -> Result<&str, TuioError> {
+pub fn extract_string(message: &OscMessage, index: usize) -> Result<String, TuioError> {
     extract_arg(message, index, |arg| match arg {
-        OscType::String(val) => Some(val.as_str()),
+        OscType::String(val) => Some(val.to_owned()),
         _ => None,
     })
 }
