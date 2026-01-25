@@ -6,3 +6,4 @@ authors.workspace = true
 
 [dependencies]
 tuio = {path = "../tuio"}
+rosc = {workspace=true}
