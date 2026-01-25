@@ -1,21 +1,10 @@
-// use std::{
-//     io::Error,
-//     net::{Ipv4Addr, SocketAddrV4, TcpStream, UdpSocket},
-//     sync::{Arc, Mutex},
-// };
+use std::{
+    io,
+    net::{Ipv4Addr, SocketAddrV4, UdpSocket},
+};
 
-// use rosc::OscPacket;
-// use tungstenite::{ClientRequestBuilder, Message, WebSocket, connect, stream::MaybeTlsStream};
-
-// pub trait OscReceiver<P>
-// where
-//     Self: Sized,
-// {
-//     fn connect(remote: Ipv4Addr, port: u16) -> anyhow::Result<Self>;
-//     fn disconnect(&self);
-//     fn is_connected(&self) -> bool;
-//     fn recv(&self) -> anyhow::Result<P>;
-// }
+use log::{debug, info};
+use rosc::{OscPacket, decoder::MTU};
 
 // #[derive(Debug)]
 // pub struct WebsocketOscReceiver {
@@ -57,28 +46,26 @@
 //     }
 // }
 
-// #[derive(Debug)]
-// pub struct UdpOscReceiver {
-//     socket: Arc<UdpSocket>,
-// }
+#[derive(Debug)]
+pub struct UdpOscReceiver {
+    socket: UdpSocket,
+    buffer: [u8; MTU],
+}
 
-// impl OscReceiver<OscPacket> for UdpOscReceiver {
-//     fn connect(remote: Ipv4Addr, port: u16) -> anyhow::Result<Self> {
-//         Ok(Self {
-//             socket: Arc::new(UdpSocket::bind(SocketAddrV4::new(remote, port))?),
-//         })
-//     }
+impl UdpOscReceiver {
+    pub fn new(remote: Ipv4Addr, port: u16) -> Result<Self, io::Error> {
+        let socket = UdpSocket::bind(SocketAddrV4::new(remote, port))?;
+        info!("Created UDP socket for {remote}:{port}");
+        Ok(Self {
+            socket,
+            buffer: [0u8; MTU],
+        })
+    }
 
-//     fn disconnect(&self) {}
-
-//     fn is_connected(&self) -> bool {
-//         true
-//     }
-
-//     fn recv(&self) -> anyhow::Result<OscPacket> {
-//         let mut buffer = [0u8; rosc::decoder::MTU];
-//         let size = self.socket.recv(&mut buffer)?;
-//         let (_, packet) = rosc::decoder::decode_udp(&buffer[..size])?;
-//         Ok(packet)
-//     }
-// }
+    pub fn recv(&mut self) -> Result<OscPacket, io::Error> {
+        let size = self.socket.recv(&mut self.buffer)?;
+        let (_, packet) = rosc::decoder::decode_udp(&self.buffer[..size]).unwrap();
+        debug!("{:?}", packet);
+        Ok(packet)
+    }
+}
