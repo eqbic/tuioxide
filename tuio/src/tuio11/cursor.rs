@@ -91,4 +91,8 @@ impl CursorProfile {
             acceleration,
         }
     }
+
+    pub fn session_id(&self) -> i32 {
+        self.session_id
+    }
 }
