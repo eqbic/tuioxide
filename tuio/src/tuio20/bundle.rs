@@ -32,6 +32,24 @@ pub struct Frame {
     source: String,
 }
 
+impl Frame {
+    pub fn frame_id(&self) -> i32 {
+        self.frame_id
+    }
+
+    pub fn time(&self) -> &TuioTime {
+        &self.time
+    }
+
+    pub fn dimensions(&self) -> (u16, u16) {
+        (self.dimension_x, self.dimension_y)
+    }
+
+    pub fn source(&self) -> &str {
+        &self.source
+    }
+}
+
 impl<'a> TryFrom<&'a OscMessage> for Frame {
     type Error = TuioError;
 
@@ -67,6 +85,30 @@ impl TuioBundle {
             .iter()
             .filter_map(|e| e.clone().int())
             .collect();
+    }
+
+    pub fn pointers(&self) -> &Vec<PointerProfile> {
+        &self.entities.pointers
+    }
+
+    pub fn tokens(&self) -> &Vec<TokenProfile> {
+        &self.entities.tokens
+    }
+
+    pub fn bounds(&self) -> &Vec<BoundsProfile> {
+        &self.entities.bounds
+    }
+
+    pub fn symbols(&self) -> &Vec<SymbolProfile> {
+        &self.entities.symbols
+    }
+
+    pub fn frame(&self) -> &Frame {
+        &self.frame
+    }
+
+    pub fn alive(&self) -> &HashSet<i32> {
+        &self.alive
     }
 
     pub fn set_frame(&mut self, message: &OscMessage) {

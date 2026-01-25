@@ -6,7 +6,7 @@ use std::{
 use log::debug;
 use rosc::OscPacket;
 use tuio::{
-    common::tuio_time::TuioTime,
+    common::{tuio_time::TuioTime, utils::retain_alive},
     tuio11::{
         bundle::{EntityType, TuioBundle, TuioBundleType},
         cursor::Cursor,
@@ -133,17 +133,4 @@ fn process_objects(
             };
         }
     }
-}
-
-fn retain_alive<T>(current: &mut HashMap<i32, T>, alive: &HashSet<i32>) -> Vec<T>
-where
-    T: Copy,
-{
-    let to_remove: Vec<T> = current
-        .iter()
-        .filter(|(key, _)| !alive.contains(key))
-        .map(|(_, v)| *v)
-        .collect();
-    current.retain(|key, _| alive.contains(key));
-    to_remove
 }

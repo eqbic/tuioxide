@@ -2,6 +2,7 @@ use tuioxide_macros::profile;
 
 use crate::common::{container::Container, tuio_time::TuioTime};
 
+#[derive(Debug, Clone, Copy)]
 pub struct Token {
     container: Container,
     token: TokenProfile,
@@ -33,4 +34,10 @@ pub struct TokenProfile {
     angle_speed: Option<f32>,
     acceleration: Option<f32>,
     rotation_acceleration: Option<f32>,
+}
+
+impl TokenProfile {
+    pub fn session_id(&self) -> i32 {
+        self.session_id
+    }
 }

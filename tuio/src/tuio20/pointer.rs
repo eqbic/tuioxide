@@ -2,6 +2,7 @@ use tuioxide_macros::profile;
 
 use crate::common::{container::Container, tuio_time::TuioTime};
 
+#[derive(Debug, Clone, Copy)]
 pub struct Pointer {
     container: Container,
     pointer: PointerProfile,
@@ -36,6 +37,12 @@ pub struct PointerProfile {
     pressure_speed: Option<f32>,
     acceleration: Option<f32>,
     pressure_acceleration: Option<f32>,
+}
+
+impl PointerProfile {
+    pub fn session_id(&self) -> i32 {
+        self.session_id
+    }
 }
 
 #[cfg(test)]

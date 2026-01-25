@@ -1,5 +1,5 @@
 use client::{common::osc_receiver::UdpOscReceiver, tuio20::processor::Processor};
-use log::error;
+use log::{error, info};
 use std::net::Ipv4Addr;
 
 fn main() {
@@ -25,5 +25,14 @@ fn main() {
             }
         };
         processor.update(packet);
+        let pointers = processor.pointers();
+        let tokens = processor.tokens();
+        if !&pointers.is_empty() {
+            info!("{pointers:?}");
+        }
+
+        if !&tokens.is_empty() {
+            info!("{tokens:?}");
+        }
     }
 }
