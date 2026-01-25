@@ -1,6 +1,6 @@
 use std::{ops, time::SystemTime};
 
-use rosc::OscTime;
+use rosc::{OscTime, OscTimeError};
 
 use crate::common::constants::{MICRO_PER_MILLI, MICRO_PER_SECOND, MILLI_PER_SECOND, UNIX_OFFSET};
 
@@ -18,7 +18,7 @@ impl TuioTime {
         }
     }
 
-    pub fn from_system_time() -> anyhow::Result<Self> {
+    pub fn from_system_time() -> Result<TuioTime, OscTimeError> {
         let osc_time = OscTime::try_from(SystemTime::now())?;
         Ok(TuioTime::from(osc_time))
     }
