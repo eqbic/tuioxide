@@ -2,8 +2,12 @@
 name = "tuioxide"
 version = "0.1.0"
 edition = "2024"
+authors = ["Erich Querner"]
 
-[dependencies]
+[workspace]
+members = ["tuio"]
+
+[dependencies.workspace]
 anyhow = "~1.0"
 rosc = "~0.11"
 euclid = "~0.22"

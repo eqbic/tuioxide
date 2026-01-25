@@ -1,0 +1,12 @@
+[package]
+name = "tuio"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+rosc = {workspace = true}
+euclid = {workspace = true}
+thiserror = {workspace = true}
+ringbuffer = {workspace = true}
+tuioxide-macros = {workspace = true}
