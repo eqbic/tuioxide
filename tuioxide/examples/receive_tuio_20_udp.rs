@@ -6,7 +6,7 @@ fn main() {
     let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
         Ok(receiver) => receiver,
         Err(error) => {
-            epr`!("{error}");
+            eprintln!("{error}");
             return;
         }
     };
