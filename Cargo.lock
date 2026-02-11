@@ -375,6 +375,7 @@ dependencies = [
  "ringbuffer",
  "rosc",
  "thiserror",
+ "tuioxide-macros",
  "tungstenite",
 ]
 
