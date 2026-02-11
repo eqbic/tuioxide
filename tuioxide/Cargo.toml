@@ -6,6 +6,8 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Tuio implementation"
+readme = "../README.md"
+
 
 [dependencies]
 anyhow = "~1.0"
