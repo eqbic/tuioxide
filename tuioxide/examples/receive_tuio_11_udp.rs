@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-use tuioxide::client::common::osc_receiver::UdpOscReceiver;
+use tuioxide::client::osc_receiver::UdpOscReceiver;
 use tuioxide::client::tuio11::processor::Processor;
 
 fn main() {
