@@ -7,6 +7,7 @@ license.workspace = true
 repository.workspace = true
 description = "A Rust implementation of the TUIO 1.1 and TUIO 2.0 protocols, providing both client and server components for sending and receiving multitouch and tangible object data over OSC."
 readme = "../README.md"
+keywords = ["tuio", "osc", "tangible", "touch", "multitouch"]
 
 
 [dependencies]
