@@ -1,16 +1,12 @@
-use client::{common::osc_receiver::UdpOscReceiver, tuio11::processor::Processor};
-use log::{error, info};
 use std::net::Ipv4Addr;
 
-fn main() {
-    env_logger::builder()
-        .filter_level(log::LevelFilter::Info)
-        .init();
+use tuioxide::client::common::osc_receiver::UdpOscReceiver;
 
+fn main() {
     let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
         Ok(receiver) => receiver,
         Err(error) => {
-            error!("{error}");
+            eprintln!("{error}");
             return;
         }
     };
@@ -19,7 +15,7 @@ fn main() {
         let packet = match receiver.recv() {
             Ok(packet) => packet,
             Err(error) => {
-                error!("{error}");
+                eprintln!("{error}");
                 continue;
             }
         };
@@ -28,11 +24,11 @@ fn main() {
         let objects = processor.objects();
 
         if !&cursors.is_empty() {
-            info!("{cursors:?}");
+            println!("{cursors:?}");
         }
 
         if !&objects.is_empty() {
-            info!("{objects:?}");
+            println!("{objects:?}");
         }
     }
 }

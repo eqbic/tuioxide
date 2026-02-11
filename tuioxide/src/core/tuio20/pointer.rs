@@ -1,6 +1,6 @@
 use tuioxide_macros::profile;
 
-use crate::common::{container::Container, tuio_time::TuioTime};
+use crate::core::common::{container::Container, tuio_time::TuioTime};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Pointer {

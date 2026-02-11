@@ -3,8 +3,8 @@ use std::collections::HashSet;
 use rosc::{OscMessage, OscType};
 
 use crate::{
-    common::errors::TuioError,
-    tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
+    core::common::errors::TuioError,
+    core::tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
 };
 
 #[derive(Debug, Clone, Default, Copy)]

@@ -1,6 +1,6 @@
 use rosc::{OscBundle, OscPacket};
 
-use crate::{common::errors::TuioError, tuio20::bundle::TuioBundle};
+use crate::{core::common::errors::TuioError, core::tuio20::bundle::TuioBundle};
 
 pub struct OscDecoder;
 

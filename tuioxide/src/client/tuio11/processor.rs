@@ -5,7 +5,8 @@ use std::{
 
 use log::debug;
 use rosc::OscPacket;
-use tuio::{
+
+use crate::core::{
     common::{tuio_time::TuioTime, utils::retain_alive},
     tuio11::{
         bundle::{EntityType, TuioBundle, TuioBundleType},

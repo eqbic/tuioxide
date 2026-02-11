@@ -1,7 +1,6 @@
 use rosc::{OscMessage, OscType};
 
-use crate::common::errors::TuioError;
-use crate::common::tuio_time::TuioTime;
+use crate::core::common::{errors::TuioError, tuio_time::TuioTime};
 
 fn extract_arg<T, F>(message: &OscMessage, index: usize, extractor: F) -> Result<T, TuioError>
 where

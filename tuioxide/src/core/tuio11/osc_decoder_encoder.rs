@@ -2,10 +2,10 @@ use rosc::{OscBundle, OscMessage, OscPacket, OscTime, OscType};
 
 use std::{iter, time::SystemTime};
 
-use crate::tuio11::bundle::{TuioBundle, TuioBundleType};
-use crate::tuio11::profile::Profile;
+use crate::core::tuio11::bundle::{TuioBundle, TuioBundleType};
+use crate::core::tuio11::profile::Profile;
 
-use crate::common::errors::TuioError;
+use crate::core::common::errors::TuioError;
 
 pub struct OscDecoder;
 
@@ -100,7 +100,7 @@ impl OscEncoder {
 mod tests {
     use euclid::default::{Point2D, Vector2D};
 
-    use crate::tuio11::{bundle::EntityType, cursor::CursorProfile, object::ObjectProfile};
+    use crate::core::tuio11::{bundle::EntityType, cursor::CursorProfile, object::ObjectProfile};
 
     use super::*;
 
