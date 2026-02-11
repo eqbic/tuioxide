@@ -11,7 +11,6 @@ keywords = ["tuio", "osc", "tangible", "touch", "multitouch"]
 
 
 [dependencies]
-anyhow = "~1.0"
 rosc = "~0.11"
 euclid = "~0.22"
 thiserror = "~2.0"
