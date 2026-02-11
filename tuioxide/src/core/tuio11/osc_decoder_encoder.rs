@@ -5,7 +5,7 @@ use std::{iter, time::SystemTime};
 use crate::core::tuio11::bundle::{TuioBundle, TuioBundleType};
 use crate::core::tuio11::profile::Profile;
 
-use crate::core::common::errors::TuioError;
+use crate::core::errors::TuioError;
 
 pub struct OscDecoder;
 

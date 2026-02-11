@@ -3,13 +3,13 @@ use std::collections::{HashMap, HashSet, hash_map};
 use rosc::OscMessage;
 
 use crate::{
-    core::common::{
+    core::tuio20::{
+        bounds::BoundsProfile, pointer::PointerProfile, symbol::SymbolProfile, token::TokenProfile,
+    },
+    core::{
         errors::TuioError,
         osc_utils::{extract_int, extract_string, extract_time},
         tuio_time::TuioTime,
-    },
-    core::tuio20::{
-        bounds::BoundsProfile, pointer::PointerProfile, symbol::SymbolProfile, token::TokenProfile,
     },
 };
 

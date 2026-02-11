@@ -6,11 +6,11 @@ use std::{
 use rosc::OscPacket;
 
 use crate::core::{
-    common::{tuio_time::TuioTime, utils::retain_alive},
     tuio20::{
         bounds::Bounds, bundle::TuioBundle, osc_decoder::OscDecoder, pointer::Pointer,
         symbol::Symbol, token::Token,
     },
+    {tuio_time::TuioTime, utils::retain_alive},
 };
 
 pub struct Processor {

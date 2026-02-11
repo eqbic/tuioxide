@@ -2,9 +2,7 @@ use std::{ops, time::SystemTime};
 
 use rosc::{OscTime, OscTimeError};
 
-use crate::core::common::constants::{
-    MICRO_PER_MILLI, MICRO_PER_SECOND, MILLI_PER_SECOND, UNIX_OFFSET,
-};
+use crate::core::constants::{MICRO_PER_MILLI, MICRO_PER_SECOND, MILLI_PER_SECOND, UNIX_OFFSET};
 
 #[derive(Debug, Clone, Default, PartialEq, Copy)]
 pub struct TuioTime {

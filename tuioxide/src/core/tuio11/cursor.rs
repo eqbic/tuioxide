@@ -2,13 +2,13 @@ use euclid::default::{Point2D, Vector2D};
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::{
-    core::common::{
+    core::tuio11::profile::Profile,
+    core::{
         container::Container,
         errors::TuioError,
         osc_utils::{extract_float, extract_int},
         tuio_time::TuioTime,
     },
-    core::tuio11::profile::Profile,
 };
 
 #[derive(Debug, Clone, Copy)]

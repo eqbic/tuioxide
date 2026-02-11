@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use rosc::{OscMessage, OscType};
 
 use crate::{
-    core::common::errors::TuioError,
+    core::errors::TuioError,
     core::tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
 };
 
