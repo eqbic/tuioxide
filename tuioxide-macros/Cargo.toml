@@ -3,6 +3,8 @@ name = "tuioxide-macros"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [lib]
 proc-macro = true
