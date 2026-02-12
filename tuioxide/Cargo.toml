@@ -9,6 +9,8 @@ description = "A Rust implementation of the TUIO 1.1 and TUIO 2.0 protocols, pro
 readme = "../README.md"
 keywords = ["tuio", "osc", "tangible", "touch", "multitouch"]
 
+[features]
+websocket = []
 
 [dependencies]
 rosc = "~0.11"
