@@ -1,6 +1,9 @@
 use std::net::Ipv4Addr;
 
-use tuioxide::client::{tuio11::processor::Processor, udp_receiver::UdpOscReceiver};
+use tuioxide::{
+    client::{tuio11::processor::Processor, udp_receiver::UdpOscReceiver},
+    core::tuio11::event::{CursorEvent, ObjectEvent},
+};
 
 fn main() {
     let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
@@ -19,16 +22,22 @@ fn main() {
                 continue;
             }
         };
-        processor.update(packet);
-        let cursors = processor.cursors();
-        let objects = processor.objects();
+        if let Some(tuio_events) = processor.update(packet) {
+            for event in tuio_events.cursor_events {
+                match event {
+                    CursorEvent::Add(cursor) => println!("New cursor: {cursor:?}"),
+                    CursorEvent::Update(cursor) => println!("Update cursor: {cursor:?}"),
+                    CursorEvent::Remove(cursor) => println!("Remove cursor: {cursor:?}"),
+                }
+            }
 
-        if !&cursors.is_empty() {
-            println!("{cursors:?}");
-        }
-
-        if !&objects.is_empty() {
-            println!("{objects:?}");
+            for event in tuio_events.object_events {
+                match event {
+                    ObjectEvent::Add(object) => println!("New object: {object:?}"),
+                    ObjectEvent::Update(object) => println!("Update object: {object:?}"),
+                    ObjectEvent::Remove(object) => println!("Remove object: {object:?}"),
+                }
+            }
         }
     }
 }

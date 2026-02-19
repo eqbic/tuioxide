@@ -7,14 +7,22 @@ use log::debug;
 use rosc::OscPacket;
 
 use crate::core::{
+    tuio_time::TuioTime,
     tuio11::{
         bundle::{EntityType, TuioBundle, TuioBundleType},
         cursor::Cursor,
+        event::{CursorEvent, ObjectEvent},
         object::Object,
         osc_decoder_encoder::OscDecoder,
     },
-    {tuio_time::TuioTime, utils::retain_alive},
+    utils::retain_alive,
 };
+
+#[derive(Debug, Default)]
+pub struct TuioEvents {
+    pub cursor_events: Vec<CursorEvent>,
+    pub object_events: Vec<ObjectEvent>,
+}
 
 pub struct Processor {
     current_frame: Cell<i32>,
@@ -39,8 +47,8 @@ impl Processor {
         }
     }
 
-    pub fn update(&self, packet: OscPacket) {
-        self.process_packet(packet);
+    pub fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
+        self.process_packet(packet)
     }
 
     pub fn cursors(&self) -> Vec<Cursor> {
@@ -66,26 +74,39 @@ impl Processor {
         false
     }
 
-    fn process_packet(&self, packet: OscPacket) {
+    fn process_packet(&self, packet: OscPacket) -> Option<TuioEvents> {
         if let OscPacket::Bundle(bundle) = packet {
             let tuio_bundle = OscDecoder::decode_bundle(bundle).unwrap();
             let alive = tuio_bundle.alive();
             let current_time = self.current_time.get();
             if self.update_frame(tuio_bundle.fseq()) {
+                let mut events = TuioEvents::default();
                 match tuio_bundle.profile_type() {
                     TuioBundleType::Cursor => {
                         let mut current_cursors = self.cursors.borrow_mut();
-                        process_cursors(&mut current_cursors, alive, &tuio_bundle, &current_time);
+                        events.cursor_events = process_cursors(
+                            &mut current_cursors,
+                            alive,
+                            &tuio_bundle,
+                            &current_time,
+                        );
                     }
                     TuioBundleType::Object => {
                         let mut current_objects = self.objects.borrow_mut();
-                        process_objects(&mut current_objects, alive, &tuio_bundle, &current_time);
+                        events.object_events = process_objects(
+                            &mut current_objects,
+                            alive,
+                            &tuio_bundle,
+                            &current_time,
+                        );
                     }
                     TuioBundleType::Blob => {}
                     TuioBundleType::Unknown => {}
                 }
+                return Some(events);
             }
         }
+        None
     }
 }
 
@@ -94,23 +115,34 @@ fn process_cursors(
     alive: &HashSet<i32>,
     tuio_bundle: &TuioBundle,
     current_time: &TuioTime,
-) {
-    retain_alive(current_cursors, alive);
+) -> Vec<CursorEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_cursors, alive)
+        .iter()
+        .for_each(|cursor| {
+            let event = CursorEvent::Remove(*cursor);
+            events.push(event);
+        });
     if let Some(EntityType::Cursor(cursors)) = tuio_bundle.tuio_entities() {
         for active_cursor in cursors {
             debug!("{active_cursor:?}");
             match current_cursors.get_mut(&active_cursor.session_id()) {
                 Some(cursor) => {
                     cursor.update(current_time, active_cursor);
+                    let event = CursorEvent::Update(*cursor);
+                    events.push(event);
                 }
                 None => {
                     let session_id = active_cursor.session_id();
                     let new_cursor = Cursor::new(current_time, *active_cursor);
                     current_cursors.insert(session_id, new_cursor);
+                    let event = CursorEvent::Add(new_cursor);
+                    events.push(event);
                 }
             };
         }
     }
+    events
 }
 
 fn process_objects(
@@ -118,20 +150,31 @@ fn process_objects(
     alive: &HashSet<i32>,
     tuio_bundle: &TuioBundle,
     current_time: &TuioTime,
-) {
-    retain_alive(current_objects, alive);
+) -> Vec<ObjectEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_objects, alive)
+        .iter()
+        .for_each(|object| {
+            let event = ObjectEvent::Remove(*object);
+            events.push(event);
+        });
     if let Some(EntityType::Object(objects)) = tuio_bundle.tuio_entities() {
         for active_object in objects {
             match current_objects.get_mut(&active_object.session_id()) {
                 Some(object) => {
                     object.update(current_time, active_object);
+                    let event = ObjectEvent::Update(*object);
+                    events.push(event);
                 }
                 None => {
                     let session_id = active_object.session_id();
                     let new_object = Object::new(current_time, *active_object);
                     current_objects.insert(session_id, new_object);
+                    let event = ObjectEvent::Add(new_object);
+                    events.push(event);
                 }
             };
         }
     }
+    events
 }
