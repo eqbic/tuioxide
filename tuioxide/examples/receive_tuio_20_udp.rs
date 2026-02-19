@@ -1,6 +1,6 @@
 use std::net::Ipv4Addr;
 
-use tuioxide::client::{osc_receiver::UdpOscReceiver, tuio20::processor::Processor};
+use tuioxide::client::{tuio20::processor::Processor, udp_receiver::UdpOscReceiver};
 
 fn main() {
     let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
