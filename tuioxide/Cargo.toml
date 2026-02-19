@@ -20,3 +20,7 @@ thiserror = "~2.0"
 tungstenite = {version = "0.27", optional = true}
 log = "0.4"
 tuioxide-macros = {path="../tuioxide-macros"}
+
+[[example]]
+name = "receive_tuio_11_websocket"
+required-features = ["websocket"]
