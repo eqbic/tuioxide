@@ -1,5 +1,9 @@
 # tuioxide
 
+# IMPORTANT
+
+**This package is currently WIP and NOT fully functional yet!**
+
 Tuioxide is a Rust implementation of the [TUIO](https://tuio.org) specification by Martin Kaltenbrunner. It supports both [TUIO 1.1](https://tuio.org/?specification) and [TUIO 2.0](https://www.tuio.org/?tuio20) and is based on [rosc](https://crates.io/crates/rosc).
 
 ## Features
