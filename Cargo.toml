@@ -2,8 +2,7 @@
 version = "0.1.0"
 edition = "2024"
 authors = ["Erich Querner"]
-license-file = "LICENSE"
-repository = "https://codeberg.org/qbic/tuioxide"
+
 
 [workspace]
 members = ["tuioxide", "tuioxide-macros"]
