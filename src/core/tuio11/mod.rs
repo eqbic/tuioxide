@@ -1,8 +1,6 @@
 pub mod blob;
-pub mod bundle;
+pub(crate) mod bundle;
 pub mod cursor;
 pub mod event;
 pub mod object;
-pub mod osc_decoder_encoder;
-pub mod rotation;
-pub mod translation;
+pub(crate) mod osc_decoder_encoder;
