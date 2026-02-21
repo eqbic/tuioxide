@@ -22,7 +22,7 @@ pub struct Blob {
 
 impl Blob {
     pub(crate) fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
-        let container = Container::new(start_time, blob.session_id, blob.position);
+        let container = Container::new(start_time, blob.session_id);
         let translation = Translation::new(blob.position, blob.velocity, blob.acceleration);
         let rotation = Rotation::new(blob.angle, blob.rotation_speed, blob.rotation_acceleration);
         Self {
@@ -35,7 +35,7 @@ impl Blob {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
-        self.container.update(time, blob);
+        self.container.update(time);
         self.translation
             .update(blob.position, blob.velocity, blob.acceleration);
         self.rotation

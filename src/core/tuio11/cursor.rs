@@ -18,7 +18,7 @@ pub struct Cursor {
 
 impl Cursor {
     pub(crate) fn new(start_time: &TuioTime, cursor: CursorProfile) -> Self {
-        let container = Container::new(start_time, cursor.session_id, cursor.position);
+        let container = Container::new(start_time, cursor.session_id);
         let translation = Translation::new(cursor.position, cursor.velocity, cursor.acceleration);
         Self {
             container,
@@ -27,7 +27,7 @@ impl Cursor {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, cursor: &CursorProfile) {
-        self.container.update(time, cursor);
+        self.container.update(time);
         self.translation
             .update(cursor.position, cursor.velocity, cursor.acceleration);
     }

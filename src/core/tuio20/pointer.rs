@@ -27,7 +27,7 @@ pub struct Pointer {
 
 impl Pointer {
     pub(crate) fn new(start_time: &TuioTime, pointer: PointerProfile) -> Self {
-        let container = Container::new(start_time, pointer.session_id, pointer.position);
+        let container = Container::new(start_time, pointer.session_id);
         let translation = Translation::new(
             pointer.position,
             pointer.velocity.unwrap_or_default(),
@@ -49,7 +49,7 @@ impl Pointer {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, pointer: &PointerProfile) {
-        self.container.update(time, pointer);
+        self.container.update(time);
         self.translation.update(
             pointer.position,
             pointer.velocity.unwrap_or_default(),

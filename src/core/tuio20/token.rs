@@ -22,7 +22,7 @@ pub struct Token {
 
 impl Token {
     pub(crate) fn new(start_time: &TuioTime, token: TokenProfile) -> Self {
-        let container = Container::new(start_time, token.session_id, token.position);
+        let container = Container::new(start_time, token.session_id);
         let translation = Translation::new(
             token.position,
             token.velocity.unwrap_or_default(),
@@ -43,7 +43,7 @@ impl Token {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, token: &TokenProfile) {
-        self.container.update(time, token);
+        self.container.update(time);
         self.translation.update(
             token.position,
             token.velocity.unwrap_or_default(),

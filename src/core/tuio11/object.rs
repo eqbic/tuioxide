@@ -21,7 +21,7 @@ pub struct Object {
 
 impl Object {
     pub(crate) fn new(start_time: &TuioTime, object: ObjectProfile) -> Self {
-        let container = Container::new(start_time, object.session_id, object.position);
+        let container = Container::new(start_time, object.session_id);
         let translation = Translation::new(object.position, object.velocity, object.acceleration);
         let rotation = Rotation::new(
             object.angle,
@@ -37,7 +37,7 @@ impl Object {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, object: &ObjectProfile) {
-        self.container.update(time, object);
+        self.container.update(time);
         self.class_id = object.class_id;
         self.translation
             .update(object.position, object.velocity, object.acceleration);

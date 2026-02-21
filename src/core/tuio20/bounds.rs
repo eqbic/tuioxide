@@ -22,7 +22,7 @@ pub struct Bounds {
 
 impl Bounds {
     pub(crate) fn new(start_time: &TuioTime, bounds: BoundsProfile) -> Self {
-        let container = Container::new(start_time, bounds.session_id, bounds.position);
+        let container = Container::new(start_time, bounds.session_id);
         let translation = Translation::new(
             bounds.position,
             bounds.velocity.unwrap_or_default(),
@@ -43,7 +43,7 @@ impl Bounds {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, bounds: &BoundsProfile) {
-        self.container.update(time, bounds);
+        self.container.update(time);
         self.translation.update(
             bounds.position,
             bounds.velocity.unwrap_or_default(),
