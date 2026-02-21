@@ -1,8 +1,4 @@
-use crate::core::{
-    math::{Position, Velocity},
-    profile::Profile,
-    tuio_time::TuioTime,
-};
+use crate::core::tuio_time::TuioTime;
 
 /// Base container with attributes all tuio entities share.
 #[derive(Debug, Clone, Copy, PartialEq)]
