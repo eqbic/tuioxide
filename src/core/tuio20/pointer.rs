@@ -23,7 +23,7 @@ pub struct Pointer {
 }
 
 impl Pointer {
-    pub fn new(start_time: &TuioTime, pointer: PointerProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, pointer: PointerProfile) -> Self {
         let container = Container::new(start_time, pointer.session_id, pointer.position);
         Self {
             container,
@@ -38,9 +38,61 @@ impl Pointer {
         }
     }
 
-    pub fn update(&mut self, time: &TuioTime, pointer: &PointerProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, pointer: &PointerProfile) {
         self.container.update(time, pointer);
         todo!("update pointer fields")
+    }
+
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    pub fn start_time(&self) -> TuioTime {
+        self.container.start_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.container.session_id
+    }
+
+    pub fn type_user_id(&self) -> i32 {
+        self.type_user_id
+    }
+
+    pub fn component_id(&self) -> i32 {
+        self.component_id
+    }
+
+    pub fn position(&self) -> Position {
+        self.container.position
+    }
+
+    pub fn velocity(&self) -> Velocity {
+        self.container.velocity
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.angle
+    }
+
+    pub fn shear(&self) -> f32 {
+        self.shear
+    }
+
+    pub fn pressure(&self) -> f32 {
+        self.pressure
+    }
+
+    pub fn radius(&self) -> f32 {
+        self.radius
+    }
+
+    pub fn pressure_speed(&self) -> Option<f32> {
+        self.pressure_speed
+    }
+
+    pub fn pressure_acceleration(&self) -> Option<f32> {
+        self.pressure_acceleration
     }
 }
 
