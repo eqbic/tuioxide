@@ -2,7 +2,7 @@ use std::io;
 
 use crate::client::{
     osc_receiver::{OscReceiver, UdpOscReceiver},
-    tuio20::processor::Processor,
+    tuio20::processor::{Processor, TuioEvents},
 };
 
 pub struct Client<T: OscReceiver> {

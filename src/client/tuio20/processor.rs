@@ -8,11 +8,10 @@ use rosc::OscPacket;
 use crate::core::{
     profile::Profile,
     tuio_time::TuioTime,
-    tuio11::event::CursorEvent,
     tuio20::{
         bounds::Bounds,
         bundle::TuioBundle,
-        events::{PointerEvent, TokenEvent},
+        events::{BoundsEvent, PointerEvent, SymbolEvent, TokenEvent},
         osc_decoder::OscDecoder,
         pointer::Pointer,
         symbol::Symbol,
@@ -20,6 +19,14 @@ use crate::core::{
     },
     utils::retain_alive,
 };
+
+#[derive(Debug, Default)]
+pub struct TuioEvents {
+    pub pointer_events: Vec<PointerEvent>,
+    pub token_events: Vec<TokenEvent>,
+    pub bounds_events: Vec<BoundsEvent>,
+    pub symbol_events: Vec<SymbolEvent>,
+}
 
 pub struct Processor {
     current_frame: Cell<i32>,
@@ -50,8 +57,8 @@ impl Processor {
         self.tokens.borrow().values().cloned().collect()
     }
 
-    pub fn update(&self, packet: OscPacket) {
-        self.process_packet(packet);
+    pub fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
+        self.process_packet(packet)
     }
 
     fn update_frame(&self, frame: i32) -> bool {
@@ -69,27 +76,30 @@ impl Processor {
         false
     }
 
-    fn process_packet(&self, packet: OscPacket) {
+    fn process_packet(&self, packet: OscPacket) -> Option<TuioEvents> {
         if let OscPacket::Bundle(bundle) = packet {
             let tuio_bundle = OscDecoder::decode_bundle(bundle).unwrap();
             let alive = tuio_bundle.alive();
             let current_time = self.current_time.get();
             if self.update_frame(tuio_bundle.frame().frame_id()) {
-                process_pointers(
+                let mut events = TuioEvents::default();
+                events.pointer_events = process_pointers(
                     &mut self.pointers.borrow_mut(),
                     alive,
                     &tuio_bundle,
                     &current_time,
                 );
 
-                process_tokens(
+                events.token_events = process_tokens(
                     &mut self.tokens.borrow_mut(),
                     alive,
                     &tuio_bundle,
                     &current_time,
                 );
+                return Some(events);
             }
         }
+        None
     }
 }
 

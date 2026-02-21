@@ -22,7 +22,7 @@ pub enum BoundsEvent {
 }
 
 #[derive(Debug)]
-pub enum SymbolEvents {
+pub enum SymbolEvent {
     Add(Symbol),
     Update(Symbol),
     Remove(Symbol),

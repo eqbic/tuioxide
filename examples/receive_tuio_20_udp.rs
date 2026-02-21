@@ -1,34 +1,28 @@
-use std::net::Ipv4Addr;
+use std::io;
 
-use tuioxide::client::{tuio20::processor::Processor, udp_receiver::UdpOscReceiver};
+use tuioxide::{client::tuio20::client::Client, core::tuio20::events::PointerEvent};
 
-fn main() {
-    let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
-        Ok(receiver) => receiver,
-        Err(error) => {
-            eprintln!("{error}");
-            return;
-        }
-    };
+fn main() -> Result<(), io::Error> {
+    let mut client = Client::default();
 
-    let processor = Processor::default();
     loop {
-        let packet = match receiver.recv() {
-            Ok(packet) => packet,
-            Err(error) => {
-                eprintln!("{error}");
-                continue;
+        let events = client.update()?;
+        for event in events.pointer_events {
+            match event {
+                PointerEvent::Add(pointer) => println!(
+                    "New pointer [{}] at position {:?}",
+                    pointer.session_id(),
+                    pointer.position()
+                ),
+                PointerEvent::Update(pointer) => println!(
+                    "Update pointer[{}] -> {:?}",
+                    pointer.session_id(),
+                    pointer.position()
+                ),
+                PointerEvent::Remove(pointer) => {
+                    println!("Remove pointer[{}]", pointer.session_id())
+                }
             }
-        };
-        processor.update(packet);
-        let pointers = processor.pointers();
-        let tokens = processor.tokens();
-        if !&pointers.is_empty() {
-            println!("{pointers:?}");
-        }
-
-        if !&tokens.is_empty() {
-            println!("{tokens:?}");
         }
     }
 }
