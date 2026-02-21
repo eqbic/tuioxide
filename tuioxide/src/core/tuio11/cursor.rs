@@ -12,18 +12,16 @@ use crate::core::{
 #[derive(Debug, Clone, Copy)]
 pub struct Cursor {
     container: Container,
-    cursor: CursorProfile,
 }
 
 impl Cursor {
     pub fn new(start_time: &TuioTime, cursor: CursorProfile) -> Self {
-        let container = Container::new(start_time);
-        Self { container, cursor }
+        let container = Container::new(start_time, cursor.session_id, cursor.position);
+        Self { container }
     }
 
     pub fn update(&mut self, time: &TuioTime, cursor: &CursorProfile) {
-        self.container.update(time);
-        self.cursor = *cursor;
+        self.container.update(time, cursor);
     }
 }
 
@@ -65,13 +63,25 @@ impl From<CursorProfile> for OscPacket {
     }
 }
 
-impl<'a> Profile<'a> for CursorProfile {
+impl Profile for CursorProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
 
     fn address() -> String {
         "/tuio/2Dcur".into()
+    }
+
+    fn position(&self) -> Position {
+        self.position
+    }
+
+    fn velocity(&self) -> Velocity {
+        self.velocity
+    }
+
+    fn acceleration(&self) -> f32 {
+        self.acceleration
     }
 }
 
@@ -83,9 +93,5 @@ impl CursorProfile {
             velocity,
             acceleration,
         }
-    }
-
-    pub fn session_id(&self) -> i32 {
-        self.session_id
     }
 }

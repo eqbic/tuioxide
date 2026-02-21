@@ -12,18 +12,30 @@ use crate::core::{
 #[derive(Debug, Clone, Copy)]
 pub struct Object {
     container: Container,
-    object: ObjectProfile,
+    class_id: i32,
+    angle: f32,
+    rotation_speed: f32,
+    rotation_acceleration: f32,
 }
 
 impl Object {
     pub fn new(start_time: &TuioTime, object: ObjectProfile) -> Self {
-        let container = Container::new(start_time);
-        Self { container, object }
+        let container = Container::new(start_time, object.session_id, object.position);
+        Self {
+            container,
+            class_id: object.class_id,
+            angle: object.angle,
+            rotation_speed: object.rotation_speed,
+            rotation_acceleration: object.rotation_acceleration,
+        }
     }
 
     pub fn update(&mut self, time: &TuioTime, object: &ObjectProfile) {
-        self.container.update(time);
-        self.object = *object;
+        self.container.update(time, object);
+        self.class_id = object.class_id;
+        self.angle = object.angle;
+        self.rotation_speed = object.rotation_speed;
+        self.rotation_acceleration = object.rotation_acceleration;
     }
 }
 
@@ -86,13 +98,25 @@ impl From<ObjectProfile> for OscPacket {
     }
 }
 
-impl<'a> Profile<'a> for ObjectProfile {
+impl Profile for ObjectProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
 
     fn address() -> String {
         "/tuio/2Dobj".into()
+    }
+
+    fn position(&self) -> Position {
+        self.position
+    }
+
+    fn velocity(&self) -> Velocity {
+        self.velocity
+    }
+
+    fn acceleration(&self) -> f32 {
+        self.acceleration
     }
 }
 
@@ -118,9 +142,5 @@ impl ObjectProfile {
             rotation_acceleration,
             rotation_speed,
         }
-    }
-
-    pub fn session_id(&self) -> i32 {
-        self.session_id
     }
 }

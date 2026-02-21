@@ -1,3 +1,5 @@
+use std::ops::Sub;
+
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Position {
     pub x: f32,
@@ -7,6 +9,17 @@ pub struct Position {
 impl Position {
     pub fn new(x: f32, y: f32) -> Self {
         Self { x, y }
+    }
+}
+
+impl Sub for Position {
+    type Output = Velocity;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Velocity {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
     }
 }
 

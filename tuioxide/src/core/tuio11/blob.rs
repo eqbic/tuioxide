@@ -12,18 +12,33 @@ use crate::core::{
 #[derive(Debug, Clone, Copy)]
 pub struct Blob {
     container: Container,
-    blob: BlobProfile,
+    angle: f32,
+    size: Size,
+    area: f32,
+    rotation_speed: f32,
+    rotation_acceleration: f32,
 }
 
 impl Blob {
     pub fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
-        let container = Container::new(start_time);
-        Self { container, blob }
+        let container = Container::new(start_time, blob.session_id, blob.position);
+        Self {
+            container,
+            angle: blob.angle,
+            size: blob.size,
+            area: blob.area,
+            rotation_speed: blob.rotation_speed,
+            rotation_acceleration: blob.rotation_acceleration,
+        }
     }
 
     pub fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
-        self.container.update(time);
-        self.blob = *blob;
+        self.container.update(time, blob);
+        self.angle = blob.angle;
+        self.size = blob.size;
+        self.area = blob.area;
+        self.rotation_speed = blob.rotation_speed;
+        self.rotation_acceleration = blob.rotation_acceleration;
     }
 }
 
@@ -91,13 +106,25 @@ impl From<BlobProfile> for OscPacket {
     }
 }
 
-impl<'a> Profile<'a> for BlobProfile {
+impl Profile for BlobProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
 
     fn address() -> String {
         "/tuio/2Dblb".into()
+    }
+
+    fn position(&self) -> Position {
+        self.position
+    }
+
+    fn velocity(&self) -> Velocity {
+        self.velocity
+    }
+
+    fn acceleration(&self) -> f32 {
+        self.acceleration
     }
 }
 

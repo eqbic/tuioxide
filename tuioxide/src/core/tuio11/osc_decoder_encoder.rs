@@ -43,13 +43,13 @@ impl OscDecoder {
 pub struct OscEncoder;
 
 impl OscEncoder {
-    pub fn encode_bundle<'a, T, I>(
+    pub fn encode_bundle<T, I>(
         profile_collection: I,
         source: Option<&str>,
         frame_id: i32,
     ) -> OscBundle
     where
-        T: Profile<'a>,
+        T: Profile,
         I: IntoIterator<Item = T>,
     {
         let mut set_messages = vec![];
