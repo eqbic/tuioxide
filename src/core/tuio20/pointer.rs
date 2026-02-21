@@ -56,7 +56,11 @@ impl Pointer {
             pointer.acceleration.unwrap_or_default(),
         );
         self.rotation.update(pointer.angle, 0.0, 0.0);
-        todo!("update pointer fields")
+        self.shear = pointer.shear;
+        self.radius = pointer.radius;
+        self.pressure = pointer.pressure;
+        self.pressure_speed = pointer.pressure_speed;
+        self.pressure_acceleration = pointer.pressure_acceleration;
     }
 
     pub fn current_time(&self) -> TuioTime {

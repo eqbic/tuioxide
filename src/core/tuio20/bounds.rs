@@ -55,7 +55,8 @@ impl Bounds {
             bounds.rotation_acceleration.unwrap_or_default(),
         );
 
-        todo!("update bounds fields")
+        self.size = bounds.size;
+        self.area = bounds.area;
     }
 
     pub fn start_time(&self) -> TuioTime {

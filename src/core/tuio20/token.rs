@@ -54,7 +54,8 @@ impl Token {
             token.rotation_speed.unwrap_or_default(),
             token.rotation_acceleration.unwrap_or_default(),
         );
-        todo!("update token fields")
+        self.type_user_id = token.type_user_id;
+        self.component_id = token.component_id;
     }
 
     pub fn start_time(&self) -> TuioTime {

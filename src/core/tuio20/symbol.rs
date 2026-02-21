@@ -27,7 +27,11 @@ impl Symbol {
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, symbol: &SymbolProfile) {
-        todo!("update symbol fields")
+        self.current_time = *time;
+        self.type_user_id = symbol.type_user_id;
+        self.component_id = symbol.component_id;
+        self.group = symbol.group.to_owned();
+        self.data = symbol.data.to_owned();
     }
 
     pub fn start_time(&self) -> TuioTime {
