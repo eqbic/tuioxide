@@ -20,7 +20,7 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(start_time: &TuioTime, token: TokenProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, token: TokenProfile) -> Self {
         let container = Container::new(start_time, token.session_id, token.position);
         Self {
             container,
@@ -32,9 +32,49 @@ impl Token {
         }
     }
 
-    pub fn update(&mut self, time: &TuioTime, token: &TokenProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, token: &TokenProfile) {
         self.container.update(time, token);
         todo!("update token fields")
+    }
+
+    pub fn start_time(&self) -> TuioTime {
+        self.container.start_time
+    }
+
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.container.session_id
+    }
+
+    pub fn type_user_id(&self) -> i32 {
+        self.type_user_id
+    }
+
+    pub fn component_id(&self) -> i32 {
+        self.component_id
+    }
+
+    pub fn position(&self) -> Position {
+        self.container.position
+    }
+
+    pub fn velocity(&self) -> Velocity {
+        self.container.velocity
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.angle
+    }
+
+    pub fn rotation_speed(&self) -> Option<f32> {
+        self.rotation_speed
+    }
+
+    pub fn rotation_acceleration(&self) -> Option<f32> {
+        self.rotation_acceleration
     }
 }
 

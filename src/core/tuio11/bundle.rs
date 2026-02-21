@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Default, Copy)]
-pub enum TuioBundleType {
+pub(crate) enum TuioBundleType {
     Cursor,
     Object,
     Blob,

@@ -37,7 +37,7 @@ impl Object {
         self.rotation_speed = object.rotation_speed;
         self.rotation_acceleration = object.rotation_acceleration;
     }
-    
+
     pub fn current_time(&self) -> TuioTime {
         self.container.current_time
     }
@@ -163,7 +163,7 @@ impl Profile for ObjectProfile {
 
 impl ObjectProfile {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub(crate) fn new(
         session_id: i32,
         class_id: i32,
         position: Position,

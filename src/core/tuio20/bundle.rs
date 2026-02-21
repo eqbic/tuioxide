@@ -11,10 +11,8 @@ use crate::core::{
     },
 };
 
-pub enum TuioBundleType {}
-
 #[derive(Debug, Clone, Default)]
-pub struct Entities {
+struct Entities {
     pointers: Vec<PointerProfile>,
     tokens: Vec<TokenProfile>,
     bounds: Vec<BoundsProfile>,
@@ -22,7 +20,7 @@ pub struct Entities {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Frame {
+pub(crate) struct Frame {
     frame_id: i32,
     time: TuioTime,
     dimension_x: u16,
@@ -71,7 +69,7 @@ impl<'a> TryFrom<&'a OscMessage> for Frame {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct TuioBundle {
+pub(crate) struct TuioBundle {
     frame: Frame,
     entities: Entities,
     alive: HashSet<i32>,
@@ -86,50 +84,50 @@ impl TuioBundle {
             .collect();
     }
 
-    pub fn pointers(&self) -> &Vec<PointerProfile> {
+    pub(crate) fn pointers(&self) -> &Vec<PointerProfile> {
         &self.entities.pointers
     }
 
-    pub fn tokens(&self) -> &Vec<TokenProfile> {
+    pub(crate) fn tokens(&self) -> &Vec<TokenProfile> {
         &self.entities.tokens
     }
 
-    pub fn bounds(&self) -> &Vec<BoundsProfile> {
+    pub(crate) fn bounds(&self) -> &Vec<BoundsProfile> {
         &self.entities.bounds
     }
 
-    pub fn symbols(&self) -> &Vec<SymbolProfile> {
+    pub(crate) fn symbols(&self) -> &Vec<SymbolProfile> {
         &self.entities.symbols
     }
 
-    pub fn frame(&self) -> &Frame {
+    pub(crate) fn frame(&self) -> &Frame {
         &self.frame
     }
 
-    pub fn alive(&self) -> &HashSet<i32> {
+    pub(crate) fn alive(&self) -> &HashSet<i32> {
         &self.alive
     }
 
-    pub fn set_frame(&mut self, message: &OscMessage) {
+    pub(crate) fn set_frame(&mut self, message: &OscMessage) {
         self.frame = Frame::try_from(message).unwrap();
     }
 
-    pub fn add_pointer(&mut self, message: &OscMessage) {
+    pub(crate) fn add_pointer(&mut self, message: &OscMessage) {
         let pointer = PointerProfile::try_from(message).unwrap();
         self.entities.pointers.push(pointer);
     }
 
-    pub fn add_token(&mut self, message: &OscMessage) {
+    pub(crate) fn add_token(&mut self, message: &OscMessage) {
         let token = TokenProfile::try_from(message).unwrap();
         self.entities.tokens.push(token);
     }
 
-    pub fn add_bounds(&mut self, message: &OscMessage) {
+    pub(crate) fn add_bounds(&mut self, message: &OscMessage) {
         let bound = BoundsProfile::try_from(message).unwrap();
         self.entities.bounds.push(bound);
     }
 
-    pub fn add_symbol(&mut self, message: &OscMessage) {
+    pub(crate) fn add_symbol(&mut self, message: &OscMessage) {
         let symbol = SymbolProfile::try_from(message).unwrap();
         self.entities.symbols.push(symbol);
     }

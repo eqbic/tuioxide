@@ -175,7 +175,7 @@ impl Profile for BlobProfile {
 
 impl BlobProfile {
     #[allow(clippy::too_many_arguments)]
-    pub fn new(
+    pub(crate) fn new(
         session_id: i32,
         position: Position,
         angle: f32,

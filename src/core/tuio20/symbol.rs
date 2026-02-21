@@ -14,7 +14,7 @@ pub struct Symbol {
 }
 
 impl Symbol {
-    pub fn new(start_time: &TuioTime, symbol: SymbolProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, symbol: SymbolProfile) -> Self {
         Self {
             start_time: *start_time,
             current_time: *start_time,
@@ -26,8 +26,36 @@ impl Symbol {
         }
     }
 
-    pub fn update(&mut self, time: &TuioTime, symbol: &SymbolProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, symbol: &SymbolProfile) {
         todo!("update symbol fields")
+    }
+
+    pub fn start_time(&self) -> TuioTime {
+        self.start_time
+    }
+
+    pub fn current_time(&self) -> TuioTime {
+        self.current_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.session_id
+    }
+
+    pub fn type_user_id(&self) -> i32 {
+        self.type_user_id
+    }
+
+    pub fn component_id(&self) -> i32 {
+        self.component_id
+    }
+
+    pub fn group(&self) -> &str {
+        &self.group
+    }
+
+    pub fn data(&self) -> &str {
+        &self.data
     }
 }
 

@@ -7,10 +7,10 @@ use crate::core::tuio11::bundle::{TuioBundle, TuioBundleType};
 
 use crate::core::errors::TuioError;
 
-pub struct OscDecoder;
+pub(crate) struct OscDecoder;
 
 impl OscDecoder {
-    pub fn decode_bundle(bundle: OscBundle) -> Result<TuioBundle, TuioError> {
+    pub(crate) fn decode_bundle(bundle: OscBundle) -> Result<TuioBundle, TuioError> {
         let mut tuio_bundle = TuioBundle::default();
         for packet in &bundle.content {
             if let OscPacket::Message(message) = packet {
@@ -40,10 +40,10 @@ impl OscDecoder {
     }
 }
 
-pub struct OscEncoder;
+pub(crate) struct OscEncoder;
 
 impl OscEncoder {
-    pub fn encode_bundle<T, I>(
+    pub(crate) fn encode_bundle<T, I>(
         profile_collection: I,
         source: Option<&str>,
         frame_id: i32,

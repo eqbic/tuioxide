@@ -50,7 +50,7 @@ impl Cursor {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct CursorProfile {
+pub(crate) struct CursorProfile {
     session_id: i32,
     position: Position,
     velocity: Velocity,
@@ -111,7 +111,12 @@ impl Profile for CursorProfile {
 }
 
 impl CursorProfile {
-    pub fn new(session_id: i32, position: Position, velocity: Velocity, acceleration: f32) -> Self {
+    pub(crate) fn new(
+        session_id: i32,
+        position: Position,
+        velocity: Velocity,
+        acceleration: f32,
+    ) -> Self {
         Self {
             session_id,
             position,

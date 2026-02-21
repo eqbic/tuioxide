@@ -97,7 +97,7 @@ impl Pointer {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct PointerProfile {
+pub(crate) struct PointerProfile {
     session_id: i32,
     type_user_id: i32,
     component_id: i32,

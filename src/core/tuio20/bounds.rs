@@ -12,22 +12,54 @@ use crate::core::{
 #[derive(Debug, Clone, Copy)]
 pub struct Bounds {
     container: Container,
+    angle: f32,
+    size: Size,
+    area: f32,
+    rotation_speed: Option<f32>,
+    rotation_acceleration: Option<f32>,
 }
 
 impl Bounds {
-    pub fn new(start_time: &TuioTime, bounds: BoundsProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, bounds: BoundsProfile) -> Self {
         let container = Container::new(start_time, bounds.session_id, bounds.position);
-        Self { container }
+        Self {
+            container,
+            angle: bounds.angle,
+            size: bounds.size,
+            area: bounds.area,
+            rotation_speed: bounds.rotation_speed,
+            rotation_acceleration: bounds.rotation_acceleration,
+        }
     }
 
-    pub fn update(&mut self, time: &TuioTime, bounds: &BoundsProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, bounds: &BoundsProfile) {
         self.container.update(time, bounds);
         todo!("update bounds fields")
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.angle
+    }
+
+    pub fn size(&self) -> Size {
+        self.size
+    }
+
+    pub fn area(&self) -> f32 {
+        self.area
+    }
+
+    pub fn rotation_speed(&self) -> Option<f32> {
+        self.rotation_speed
+    }
+
+    pub fn rotation_acceleration(&self) -> Option<f32> {
+        self.rotation_acceleration
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct BoundsProfile {
+pub(crate) struct BoundsProfile {
     session_id: i32,
     position: Position,
     angle: f32,
