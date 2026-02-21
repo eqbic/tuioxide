@@ -1,6 +1,9 @@
 use std::io;
 
-use tuioxide::{client::tuio20::client::Client, core::tuio20::events::PointerEvent};
+use tuioxide::{
+    client::tuio20::client::Client,
+    core::tuio20::events::{PointerEvent, TokenEvent},
+};
 
 fn main() -> Result<(), io::Error> {
     let mut client = Client::default();
@@ -21,6 +24,26 @@ fn main() -> Result<(), io::Error> {
                 ),
                 PointerEvent::Remove(pointer) => {
                     println!("Remove pointer[{}]", pointer.session_id())
+                }
+            }
+        }
+
+        for event in events.token_events {
+            match event {
+                TokenEvent::Add(token) => println!(
+                    "New token [{}] with id {} at position {:?}",
+                    token.session_id(),
+                    token.component_id(),
+                    token.position()
+                ),
+                TokenEvent::Update(token) => println!(
+                    "Update token[{}] with id {} -> {:?}",
+                    token.session_id(),
+                    token.component_id(),
+                    token.position()
+                ),
+                TokenEvent::Remove(token) => {
+                    println!("Remove token[{}]", token.session_id())
                 }
             }
         }
