@@ -5,8 +5,8 @@ use crate::core::{
     errors::TuioError,
     math::{Position, Velocity},
     osc_utils::ArgCursor,
+    profile::Profile,
     tuio_time::TuioTime,
-    tuio11::profile::Profile,
 };
 
 #[derive(Debug, Clone, Copy)]

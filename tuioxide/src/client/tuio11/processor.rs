@@ -7,6 +7,7 @@ use log::debug;
 use rosc::OscPacket;
 
 use crate::core::{
+    profile::Profile,
     tuio_time::TuioTime,
     tuio11::{
         bundle::{EntityType, TuioBundle, TuioBundleType},

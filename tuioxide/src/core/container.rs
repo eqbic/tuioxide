@@ -1,7 +1,7 @@
 use crate::core::{
     math::{Position, Velocity},
+    profile::Profile,
     tuio_time::TuioTime,
-    tuio11::profile::Profile,
 };
 
 /// Base container with attributes all tuio entities share.

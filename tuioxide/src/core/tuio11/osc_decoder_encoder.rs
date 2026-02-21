@@ -2,8 +2,8 @@ use rosc::{OscBundle, OscMessage, OscPacket, OscTime, OscType};
 
 use std::{iter, time::SystemTime};
 
+use crate::core::profile::Profile;
 use crate::core::tuio11::bundle::{TuioBundle, TuioBundleType};
-use crate::core::tuio11::profile::Profile;
 
 use crate::core::errors::TuioError;
 

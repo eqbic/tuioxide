@@ -3,6 +3,7 @@ pub mod container;
 pub mod errors;
 pub mod math;
 pub mod osc_utils;
+pub mod profile;
 pub mod tuio11;
 pub mod tuio20;
 pub mod tuio_state;

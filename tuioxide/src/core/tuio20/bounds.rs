@@ -5,8 +5,8 @@ use crate::core::{
     errors::TuioError,
     math::{Position, Size, Velocity},
     osc_utils::ArgCursor,
+    profile::Profile,
     tuio_time::TuioTime,
-    tuio11::profile::Profile,
 };
 
 pub struct Bounds {
