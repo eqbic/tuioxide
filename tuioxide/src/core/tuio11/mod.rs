@@ -7,4 +7,3 @@ pub mod osc_decoder_encoder;
 pub mod profile;
 pub mod rotation;
 pub mod translation;
-pub mod tuio_entity;
