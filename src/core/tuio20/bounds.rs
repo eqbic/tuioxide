@@ -9,15 +9,15 @@ use crate::core::{
     tuio_time::TuioTime,
 };
 
+#[derive(Debug)]
 pub struct Bounds {
     container: Container,
-    bounds: BoundsProfile,
 }
 
 impl Bounds {
     pub fn new(start_time: &TuioTime, bounds: BoundsProfile) -> Self {
         let container = Container::new(start_time, bounds.session_id, bounds.position);
-        Self { container, bounds }
+        Self { container }
     }
 
     pub fn update(&mut self, time: &TuioTime, bounds: &BoundsProfile) {

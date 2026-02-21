@@ -8,9 +8,15 @@ use rosc::OscPacket;
 use crate::core::{
     profile::Profile,
     tuio_time::TuioTime,
+    tuio11::event::CursorEvent,
     tuio20::{
-        bounds::Bounds, bundle::TuioBundle, osc_decoder::OscDecoder, pointer::Pointer,
-        symbol::Symbol, token::Token,
+        bounds::Bounds,
+        bundle::TuioBundle,
+        events::{PointerEvent, TokenEvent},
+        osc_decoder::OscDecoder,
+        pointer::Pointer,
+        symbol::Symbol,
+        token::Token,
     },
     utils::retain_alive,
 };
@@ -92,18 +98,32 @@ fn process_pointers(
     alive: &HashSet<i32>,
     tuio_bundle: &TuioBundle,
     current_time: &TuioTime,
-) {
-    retain_alive(current_pointers, alive);
+) -> Vec<PointerEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_pointers, alive)
+        .iter()
+        .for_each(|pointer| {
+            let event = PointerEvent::Remove(*pointer);
+            events.push(event);
+        });
+
     tuio_bundle.pointers().iter().for_each(|pointer| {
         match current_pointers.get_mut(&pointer.session_id()) {
-            Some(p) => p.update(current_time, pointer),
+            Some(p) => {
+                p.update(current_time, pointer);
+                let event = PointerEvent::Update(*p);
+                events.push(event);
+            }
             None => {
                 let session_id = pointer.session_id();
                 let new_pointer = Pointer::new(current_time, *pointer);
                 current_pointers.insert(session_id, new_pointer);
+                let event = PointerEvent::Add(new_pointer);
+                events.push(event);
             }
         }
     });
+    events
 }
 
 fn process_tokens(
@@ -111,18 +131,31 @@ fn process_tokens(
     alive: &HashSet<i32>,
     tuio_bundle: &TuioBundle,
     current_time: &TuioTime,
-) {
-    retain_alive(current_tokens, alive);
+) -> Vec<TokenEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_tokens, alive)
+        .iter()
+        .for_each(|token| {
+            let event = TokenEvent::Remove(*token);
+            events.push(event);
+        });
     tuio_bundle.tokens().iter().for_each(|token| {
         match current_tokens.get_mut(&token.session_id()) {
-            Some(t) => t.update(current_time, token),
+            Some(t) => {
+                t.update(current_time, token);
+                let event = TokenEvent::Update(*t);
+                events.push(event);
+            }
             None => {
                 let session_id = token.session_id();
-                let new_pointer = Token::new(current_time, *token);
-                current_tokens.insert(session_id, new_pointer);
+                let new_token = Token::new(current_time, *token);
+                current_tokens.insert(session_id, new_token);
+                let event = TokenEvent::Add(new_token);
+                events.push(event);
             }
         }
     });
+    events
 }
 
 impl Default for Processor {
