@@ -6,6 +6,8 @@ use crate::core::{
     math::{Position, Velocity},
     osc_utils::ArgCursor,
     profile::Profile,
+    rotation::Rotation,
+    translation::Translation,
     tuio_time::TuioTime,
 };
 
@@ -14,26 +16,44 @@ pub struct Token {
     container: Container,
     type_user_id: i32,
     component_id: i32,
-    angle: f32,
-    rotation_speed: Option<f32>,
-    rotation_acceleration: Option<f32>,
+    translation: Translation,
+    rotation: Rotation,
 }
 
 impl Token {
     pub(crate) fn new(start_time: &TuioTime, token: TokenProfile) -> Self {
         let container = Container::new(start_time, token.session_id, token.position);
+        let translation = Translation::new(
+            token.position,
+            token.velocity.unwrap_or_default(),
+            token.acceleration.unwrap_or_default(),
+        );
+        let rotation = Rotation::new(
+            token.angle,
+            token.rotation_speed.unwrap_or_default(),
+            token.rotation_acceleration.unwrap_or_default(),
+        );
         Self {
             container,
             type_user_id: token.type_user_id,
             component_id: token.component_id,
-            angle: token.angle,
-            rotation_speed: token.rotation_speed,
-            rotation_acceleration: token.rotation_acceleration,
+            translation,
+            rotation,
         }
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, token: &TokenProfile) {
         self.container.update(time, token);
+        self.translation.update(
+            token.position,
+            token.velocity.unwrap_or_default(),
+            token.acceleration.unwrap_or_default(),
+        );
+        self.rotation.update(
+            token.angle,
+            token.rotation_speed.unwrap_or_default(),
+            token.rotation_acceleration.unwrap_or_default(),
+        );
         todo!("update token fields")
     }
 
@@ -58,23 +78,27 @@ impl Token {
     }
 
     pub fn position(&self) -> Position {
-        self.container.position
+        self.translation.position
     }
 
     pub fn velocity(&self) -> Velocity {
-        self.container.velocity
+        self.translation.velocity
+    }
+
+    pub fn speed(&self) -> f32 {
+        self.translation.velocity.speed()
     }
 
     pub fn angle(&self) -> f32 {
-        self.angle
+        self.rotation.angle
     }
 
-    pub fn rotation_speed(&self) -> Option<f32> {
-        self.rotation_speed
+    pub fn rotation_speed(&self) -> f32 {
+        self.rotation.speed
     }
 
-    pub fn rotation_acceleration(&self) -> Option<f32> {
-        self.rotation_acceleration
+    pub fn rotation_acceleration(&self) -> f32 {
+        self.rotation.acceleration
     }
 }
 

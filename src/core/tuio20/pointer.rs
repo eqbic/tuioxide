@@ -6,6 +6,8 @@ use crate::core::{
     math::{Position, Velocity},
     osc_utils::ArgCursor,
     profile::Profile,
+    rotation::Rotation,
+    translation::Translation,
     tuio_time::TuioTime,
 };
 
@@ -14,7 +16,8 @@ pub struct Pointer {
     container: Container,
     type_user_id: i32,
     component_id: i32,
-    angle: f32,
+    translation: Translation,
+    rotation: Rotation,
     shear: f32,
     radius: f32,
     pressure: f32,
@@ -25,11 +28,18 @@ pub struct Pointer {
 impl Pointer {
     pub(crate) fn new(start_time: &TuioTime, pointer: PointerProfile) -> Self {
         let container = Container::new(start_time, pointer.session_id, pointer.position);
+        let translation = Translation::new(
+            pointer.position,
+            pointer.velocity.unwrap_or_default(),
+            pointer.acceleration.unwrap_or_default(),
+        );
+        let rotation = Rotation::new(pointer.angle, 0.0, 0.0);
         Self {
             container,
             type_user_id: pointer.type_user_id,
             component_id: pointer.component_id,
-            angle: pointer.angle,
+            translation,
+            rotation,
             shear: pointer.shear,
             radius: pointer.radius,
             pressure: pointer.pressure,
@@ -40,6 +50,12 @@ impl Pointer {
 
     pub(crate) fn update(&mut self, time: &TuioTime, pointer: &PointerProfile) {
         self.container.update(time, pointer);
+        self.translation.update(
+            pointer.position,
+            pointer.velocity.unwrap_or_default(),
+            pointer.acceleration.unwrap_or_default(),
+        );
+        self.rotation.update(pointer.angle, 0.0, 0.0);
         todo!("update pointer fields")
     }
 
@@ -64,15 +80,31 @@ impl Pointer {
     }
 
     pub fn position(&self) -> Position {
-        self.container.position
+        self.translation.position
     }
 
     pub fn velocity(&self) -> Velocity {
-        self.container.velocity
+        self.translation.velocity
+    }
+
+    pub fn speed(&self) -> f32 {
+        self.translation.velocity.speed()
+    }
+
+    pub fn acceleration(&self) -> f32 {
+        self.translation.acceleration
     }
 
     pub fn angle(&self) -> f32 {
-        self.angle
+        self.rotation.angle
+    }
+
+    pub fn rotation_speed(&self) -> f32 {
+        self.rotation.speed
+    }
+
+    pub fn rotation_acceleration(&self) -> f32 {
+        self.rotation.acceleration
     }
 
     pub fn shear(&self) -> f32 {

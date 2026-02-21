@@ -6,39 +6,92 @@ use crate::core::{
     math::{Position, Size, Velocity},
     osc_utils::ArgCursor,
     profile::Profile,
+    rotation::Rotation,
+    translation::Translation,
     tuio_time::TuioTime,
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct Bounds {
     container: Container,
-    angle: f32,
+    translation: Translation,
+    rotation: Rotation,
     size: Size,
     area: f32,
-    rotation_speed: Option<f32>,
-    rotation_acceleration: Option<f32>,
 }
 
 impl Bounds {
     pub(crate) fn new(start_time: &TuioTime, bounds: BoundsProfile) -> Self {
         let container = Container::new(start_time, bounds.session_id, bounds.position);
+        let translation = Translation::new(
+            bounds.position,
+            bounds.velocity.unwrap_or_default(),
+            bounds.acceleration.unwrap_or_default(),
+        );
+        let rotation = Rotation::new(
+            bounds.angle,
+            bounds.rotation_speed.unwrap_or_default(),
+            bounds.rotation_acceleration.unwrap_or_default(),
+        );
         Self {
             container,
-            angle: bounds.angle,
             size: bounds.size,
             area: bounds.area,
-            rotation_speed: bounds.rotation_speed,
-            rotation_acceleration: bounds.rotation_acceleration,
+            translation,
+            rotation,
         }
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, bounds: &BoundsProfile) {
         self.container.update(time, bounds);
+        self.translation.update(
+            bounds.position,
+            bounds.velocity.unwrap_or_default(),
+            bounds.acceleration.unwrap_or_default(),
+        );
+        self.rotation.update(
+            bounds.angle,
+            bounds.rotation_speed.unwrap_or_default(),
+            bounds.rotation_acceleration.unwrap_or_default(),
+        );
+
         todo!("update bounds fields")
     }
 
+    pub fn start_time(&self) -> TuioTime {
+        self.container.start_time
+    }
+
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.container.session_id
+    }
+
+    pub fn position(&self) -> Position {
+        self.translation.position
+    }
+
+    pub fn velocity(&self) -> Velocity {
+        self.translation.velocity
+    }
+
+    pub fn speed(&self) -> f32 {
+        self.translation.velocity.speed()
+    }
+
     pub fn angle(&self) -> f32 {
-        self.angle
+        self.rotation.angle
+    }
+
+    pub fn rotation_speed(&self) -> f32 {
+        self.rotation.speed
+    }
+
+    pub fn rotation_acceleration(&self) -> f32 {
+        self.rotation.acceleration
     }
 
     pub fn size(&self) -> Size {
@@ -47,14 +100,6 @@ impl Bounds {
 
     pub fn area(&self) -> f32 {
         self.area
-    }
-
-    pub fn rotation_speed(&self) -> Option<f32> {
-        self.rotation_speed
-    }
-
-    pub fn rotation_acceleration(&self) -> Option<f32> {
-        self.rotation_acceleration
     }
 }
 
