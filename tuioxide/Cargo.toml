@@ -19,7 +19,6 @@ rosc = "~0.11"
 thiserror = "~2.0"
 tungstenite = {version = "0.27", optional = true}
 log = "0.4"
-tuioxide-macros = {version = "0.1.0", path="../tuioxide-macros"}
 
 [[example]]
 name = "receive_tuio_11_websocket"
