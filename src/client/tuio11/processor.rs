@@ -27,7 +27,8 @@ pub struct TuioEvents {
     pub blob_events: Vec<BlobEvent>,
 }
 
-pub struct Processor {
+#[derive(Debug, Clone)]
+pub(crate) struct Processor {
     current_frame: Cell<i32>,
     current_time: Cell<TuioTime>,
     cursors: RefCell<HashMap<i32, Cursor>>,
@@ -42,7 +43,7 @@ impl Default for Processor {
 }
 
 impl Processor {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             current_frame: (-1).into(),
             current_time: Cell::new(TuioTime::from_system_time().unwrap()),
@@ -52,7 +53,7 @@ impl Processor {
         }
     }
 
-    pub fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
+    pub(crate) fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
         self.process_packet(packet)
     }
 
