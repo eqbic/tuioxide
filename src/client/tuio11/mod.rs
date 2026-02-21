@@ -1,1 +1,2 @@
-pub mod processor;
+pub mod client;
+pub(crate) mod processor;

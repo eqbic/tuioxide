@@ -1,53 +1,27 @@
-use std::net::Ipv4Addr;
+use std::io;
 
-use tuioxide::{
-    client::{tuio11::processor::Processor, udp_receiver::UdpOscReceiver},
-    core::tuio11::event::{CursorEvent, ObjectEvent},
-};
+use tuioxide::{client::tuio11::client::Client, core::tuio11::event::CursorEvent};
 
-fn main() {
-    let mut receiver = match UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333) {
-        Ok(receiver) => receiver,
-        Err(error) => {
-            eprintln!("{error}");
-            return;
-        }
-    };
-    let processor = Processor::default();
+fn main() -> Result<(), io::Error> {
+    let mut client = Client::default();
     loop {
-        let packet = match receiver.recv() {
-            Ok(packet) => packet,
-            Err(error) => {
-                eprintln!("{error}");
-                continue;
-            }
-        };
-        if let Some(tuio_events) = processor.update(packet) {
-            for event in tuio_events.cursor_events {
-                match event {
-                    CursorEvent::Add(cursor) => println!(
-                        "New cursor [{}] at position {:?}",
-                        cursor.session_id(),
-                        cursor.position()
-                    ),
-                    CursorEvent::Update(cursor) => println!(
-                        "Update cursor[{}] -> {:?}",
-                        cursor.session_id(),
-                        cursor.position()
-                    ),
-                    CursorEvent::Remove(cursor) => {
-                        println!("Remove cursor[{}]", cursor.session_id())
-                    }
+        let events = client.update()?;
+        for event in events.cursor_events {
+            match event {
+                CursorEvent::Add(cursor) => println!(
+                    "New cursor [{}] at position {:?}",
+                    cursor.session_id(),
+                    cursor.position()
+                ),
+                CursorEvent::Update(cursor) => println!(
+                    "Update cursor[{}] -> {:?}",
+                    cursor.session_id(),
+                    cursor.position()
+                ),
+                CursorEvent::Remove(cursor) => {
+                    println!("Remove cursor[{}]", cursor.session_id())
                 }
             }
-
-            // for event in tuio_events.object_events {
-            //     match event {
-            //         ObjectEvent::Add(object) => println!("New object: {object:?}"),
-            //         ObjectEvent::Update(object) => println!("Update object: {object:?}"),
-            //         ObjectEvent::Remove(object) => println!("Remove object: {object:?}"),
-            //     }
-            // }
         }
     }
 }

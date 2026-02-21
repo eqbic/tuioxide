@@ -1,27 +1,31 @@
-use std::net::Ipv4Addr;
-use tuioxide::client::{tuio11::processor::Processor, websocket_receiver::WebsocketOscReceiver};
+use std::io;
 
-fn main() {
-    let mut receiver = WebsocketOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
-    let processor = Processor::default();
+use tuioxide::{
+    client::{WebsocketOscReceiver, tuio11::client::Client},
+    core::tuio11::event::CursorEvent,
+};
+
+fn main() -> Result<(), io::Error> {
+    let mut client = Client::new(WebsocketOscReceiver::default());
+
     loop {
-        let packet = match receiver.recv() {
-            Ok(packet) => packet,
-            Err(error) => {
-                eprintln!("{error}");
-                continue;
+        let events = client.update()?;
+        for event in events.cursor_events {
+            match event {
+                CursorEvent::Add(cursor) => println!(
+                    "New cursor [{}] at position {:?}",
+                    cursor.session_id(),
+                    cursor.position()
+                ),
+                CursorEvent::Update(cursor) => println!(
+                    "Update cursor[{}] -> {:?}",
+                    cursor.session_id(),
+                    cursor.position()
+                ),
+                CursorEvent::Remove(cursor) => {
+                    println!("Remove cursor[{}]", cursor.session_id())
+                }
             }
-        };
-        processor.update(packet);
-        let cursors = processor.cursors();
-        let objects = processor.objects();
-
-        if !&cursors.is_empty() {
-            println!("{cursors:?}");
-        }
-
-        if !&objects.is_empty() {
-            eprintln!("{objects:?}");
         }
     }
 }
