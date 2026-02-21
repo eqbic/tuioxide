@@ -1,6 +1,5 @@
 use crate::core::{
     math::{Position, Velocity},
-    tuio_state::TuioState,
     tuio_time::TuioTime,
     tuio11::profile::Profile,
 };
@@ -10,7 +9,6 @@ use crate::core::{
 pub struct Container {
     start_time: TuioTime,
     current_time: TuioTime,
-    state: TuioState,
     session_id: i32,
     position: Position,
     last_position: Position,
@@ -23,7 +21,6 @@ impl Container {
         Self {
             start_time: *start_time,
             current_time: *start_time,
-            state: TuioState::Added,
             session_id,
             position,
             last_position: Position::default(),
@@ -50,10 +47,6 @@ impl Container {
 
     pub fn current_time(&self) -> TuioTime {
         self.current_time
-    }
-
-    pub fn state(&self) -> TuioState {
-        self.state
     }
 
     pub fn session_id(&self) -> i32 {
