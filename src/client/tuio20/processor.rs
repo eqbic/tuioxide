@@ -28,7 +28,8 @@ pub struct TuioEvents {
     pub symbol_events: Vec<SymbolEvent>,
 }
 
-pub struct Processor {
+#[derive(Debug, Clone)]
+pub(crate) struct Processor {
     current_frame: Cell<i32>,
     current_time: Cell<TuioTime>,
     pointers: RefCell<HashMap<i32, Pointer>>,
@@ -38,7 +39,7 @@ pub struct Processor {
 }
 
 impl Processor {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             current_frame: (-1).into(),
             current_time: Cell::new(TuioTime::from_system_time().unwrap()),
@@ -49,15 +50,7 @@ impl Processor {
         }
     }
 
-    pub fn pointers(&self) -> Vec<Pointer> {
-        self.pointers.borrow().values().cloned().collect()
-    }
-
-    pub fn tokens(&self) -> Vec<Token> {
-        self.tokens.borrow().values().cloned().collect()
-    }
-
-    pub fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
+    pub(crate) fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
         self.process_packet(packet)
     }
 
@@ -82,20 +75,33 @@ impl Processor {
             let alive = tuio_bundle.alive();
             let current_time = self.current_time.get();
             if self.update_frame(tuio_bundle.frame().frame_id()) {
-                let mut events = TuioEvents::default();
-                events.pointer_events = process_pointers(
-                    &mut self.pointers.borrow_mut(),
-                    alive,
-                    &tuio_bundle,
-                    &current_time,
-                );
+                let events = TuioEvents {
+                    pointer_events: process_pointers(
+                        &mut self.pointers.borrow_mut(),
+                        alive,
+                        &tuio_bundle,
+                        &current_time,
+                    ),
+                    token_events: process_tokens(
+                        &mut self.tokens.borrow_mut(),
+                        alive,
+                        &tuio_bundle,
+                        &current_time,
+                    ),
+                    bounds_events: process_bounds(
+                        &mut self.bounds.borrow_mut(),
+                        alive,
+                        &tuio_bundle,
+                        &current_time,
+                    ),
+                    symbol_events: process_symbols(
+                        &mut self.symbols.borrow_mut(),
+                        alive,
+                        &tuio_bundle,
+                        &current_time,
+                    ),
+                };
 
-                events.token_events = process_tokens(
-                    &mut self.tokens.borrow_mut(),
-                    alive,
-                    &tuio_bundle,
-                    &current_time,
-                );
                 return Some(events);
             }
         }
@@ -161,6 +167,70 @@ fn process_tokens(
                 let new_token = Token::new(current_time, *token);
                 current_tokens.insert(session_id, new_token);
                 let event = TokenEvent::Add(new_token);
+                events.push(event);
+            }
+        }
+    });
+    events
+}
+
+fn process_bounds(
+    current_bounds: &mut RefMut<HashMap<i32, Bounds>>,
+    alive: &HashSet<i32>,
+    tuio_bundle: &TuioBundle,
+    current_time: &TuioTime,
+) -> Vec<BoundsEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_bounds, alive)
+        .iter()
+        .for_each(|bounds| {
+            let event = BoundsEvent::Remove(*bounds);
+            events.push(event);
+        });
+    tuio_bundle.bounds().iter().for_each(|bounds| {
+        match current_bounds.get_mut(&bounds.session_id()) {
+            Some(b) => {
+                b.update(current_time, bounds);
+                let event = BoundsEvent::Update(*b);
+                events.push(event);
+            }
+            None => {
+                let session_id = bounds.session_id();
+                let new_bounds = Bounds::new(current_time, *bounds);
+                current_bounds.insert(session_id, new_bounds);
+                let event = BoundsEvent::Add(new_bounds);
+                events.push(event);
+            }
+        }
+    });
+    events
+}
+
+fn process_symbols(
+    current_symbols: &mut RefMut<HashMap<i32, Symbol>>,
+    alive: &HashSet<i32>,
+    tuio_bundle: &TuioBundle,
+    current_time: &TuioTime,
+) -> Vec<SymbolEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_symbols, alive)
+        .iter()
+        .for_each(|symbol| {
+            let event = SymbolEvent::Remove(symbol.to_owned());
+            events.push(event);
+        });
+    tuio_bundle.symbols().iter().for_each(|symbol| {
+        match current_symbols.get_mut(&symbol.session_id()) {
+            Some(s) => {
+                s.update(current_time, symbol);
+                let event = SymbolEvent::Update(s.to_owned());
+                events.push(event);
+            }
+            None => {
+                let session_id = symbol.session_id();
+                let new_symbol = Symbol::new(current_time, symbol.to_owned());
+                current_symbols.insert(session_id, new_symbol.to_owned());
+                let event = SymbolEvent::Add(new_symbol);
                 events.push(event);
             }
         }

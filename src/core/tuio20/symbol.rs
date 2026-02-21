@@ -32,12 +32,18 @@ impl Symbol {
 }
 
 #[derive(Debug, Clone)]
-pub struct SymbolProfile {
+pub(crate) struct SymbolProfile {
     session_id: i32,
     type_user_id: i32,
     component_id: i32,
     group: String,
     data: String,
+}
+
+impl SymbolProfile {
+    pub(crate) fn session_id(&self) -> i32 {
+        self.session_id
+    }
 }
 
 impl<'a> TryFrom<&'a OscMessage> for SymbolProfile {
