@@ -56,14 +56,6 @@ impl Processor {
         self.process_packet(packet)
     }
 
-    pub fn cursors(&self) -> Vec<Cursor> {
-        self.cursors.borrow().values().cloned().collect()
-    }
-
-    pub fn objects(&self) -> Vec<Object> {
-        self.objects.borrow().values().cloned().collect()
-    }
-
     fn update_frame(&self, frame: i32) -> bool {
         if frame > 0 {
             if frame > self.current_frame.get() {
