@@ -4,7 +4,7 @@ use crate::core::{
     container::Container,
     errors::TuioError,
     math::{Position, Velocity},
-    osc_utils::{extract_float, extract_int},
+    osc_utils::ArgCursor,
     tuio_time::TuioTime,
     tuio11::profile::Profile,
 };
@@ -37,10 +37,11 @@ impl<'a> TryFrom<&'a OscMessage> for CursorProfile {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let session_id = extract_int(message, 1)?;
-        let position = Position::new(extract_float(message, 2)?, extract_float(message, 3)?);
-        let velocity = Velocity::new(extract_float(message, 4)?, extract_float(message, 5)?);
-        let acceleration = extract_float(message, 6)?;
+        let mut args = ArgCursor::new(message, 1);
+        let session_id = args.next_int()?;
+        let position = Position::new(args.next_float()?, args.next_float()?);
+        let velocity = Velocity::new(args.next_float()?, args.next_float()?);
+        let acceleration = args.next_float()?;
         let cursor = CursorProfile::new(session_id, position, velocity, acceleration);
         Ok(cursor)
     }

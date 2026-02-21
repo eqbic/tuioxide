@@ -4,7 +4,7 @@ use crate::core::{
     container::Container,
     errors::TuioError,
     math::{Position, Velocity},
-    osc_utils::{extract_float, extract_int},
+    osc_utils::ArgCursor,
     tuio_time::TuioTime,
     tuio11::profile::Profile,
 };
@@ -55,14 +55,15 @@ impl<'a> TryFrom<&'a OscMessage> for ObjectProfile {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let session_id = extract_int(message, 1)?;
-        let class_id = extract_int(message, 2)?;
-        let position = Position::new(extract_float(message, 3)?, extract_float(message, 4)?);
-        let angle = extract_float(message, 5)?;
-        let velocity = Velocity::new(extract_float(message, 6)?, extract_float(message, 7)?);
-        let rotation_speed = extract_float(message, 8)?;
-        let acceleration = extract_float(message, 9)?;
-        let rotation_acceleration = extract_float(message, 10)?;
+        let mut args = ArgCursor::new(message, 1);
+        let session_id = args.next_int()?;
+        let class_id = args.next_int()?;
+        let position = Position::new(args.next_float()?, args.next_float()?);
+        let angle = args.next_float()?;
+        let velocity = Velocity::new(args.next_float()?, args.next_float()?);
+        let rotation_speed = args.next_float()?;
+        let acceleration = args.next_float()?;
+        let rotation_acceleration = args.next_float()?;
         let object = ObjectProfile::new(
             session_id,
             class_id,
