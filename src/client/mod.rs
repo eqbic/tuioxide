@@ -1,6 +1,5 @@
+pub mod osc_receiver;
 pub mod tuio11;
 pub mod tuio20;
-pub mod udp_receiver;
-
 #[cfg(feature = "websocket")]
-pub mod websocket_receiver;
+pub use osc_receiver::websocket::WebsocketOscReceiver;
