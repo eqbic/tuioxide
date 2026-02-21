@@ -63,6 +63,11 @@ impl Container {
     }
 
     fn should_calculate_motion(&self, position: Position, velocity: Velocity) -> bool {
-        self.position != position && velocity.speed() == 0.0
+        let should_calculate = self.last_position != position && velocity.speed() == 0.0;
+        println!(
+            "should_calculate: {should_calculate}, speed: {:?}",
+            velocity.speed()
+        );
+        should_calculate
     }
 }
