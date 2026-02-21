@@ -29,3 +29,7 @@ name = "receive_tuio_11_udp"
 
 [[example]]
 name = "receive_tuio_20_udp"
+
+[[example]]
+name = "receive_tuio_20_websocket"
+required-features = ["websocket"]
