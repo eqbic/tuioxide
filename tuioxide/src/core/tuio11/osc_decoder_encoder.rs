@@ -98,9 +98,11 @@ impl OscEncoder {
 
 #[cfg(test)]
 mod tests {
-    use euclid::default::{Point2D, Vector2D};
 
-    use crate::core::tuio11::{bundle::EntityType, cursor::CursorProfile, object::ObjectProfile};
+    use crate::core::{
+        math::{Position, Velocity},
+        tuio11::{bundle::EntityType, cursor::CursorProfile, object::ObjectProfile},
+    };
 
     use super::*;
 
@@ -109,16 +111,16 @@ mod tests {
         let source = "test";
 
         let cursors = vec![
-            CursorProfile::new(5, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
-            CursorProfile::new(6, Point2D::new(0.2, 0.5), Vector2D::new(2.5, 3.1), 0.5),
+            CursorProfile::new(5, Position::new(0.2, 0.5), Velocity::new(2.5, 3.1), 0.5),
+            CursorProfile::new(6, Position::new(0.2, 0.5), Velocity::new(2.5, 3.1), 0.5),
         ];
         let objects = vec![
             ObjectProfile::new(
                 8,
                 3,
-                Point2D::new(0.2, 0.5),
+                Position::new(0.2, 0.5),
                 2.5,
-                Vector2D::new(2.5, 3.1),
+                Velocity::new(2.5, 3.1),
                 5.2,
                 1.4,
                 3.5,
@@ -126,9 +128,9 @@ mod tests {
             ObjectProfile::new(
                 12,
                 27,
-                Point2D::new(0.2, 0.5),
+                Position::new(0.2, 0.5),
                 2.5,
-                Vector2D::new(2.5, 3.1),
+                Velocity::new(2.5, 3.1),
                 5.2,
                 1.4,
                 3.5,

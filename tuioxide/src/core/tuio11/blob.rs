@@ -1,14 +1,12 @@
-use euclid::default::{Point2D, Vector2D};
 use rosc::{OscMessage, OscPacket, OscType};
 
-use crate::{
-    core::tuio11::profile::Profile,
-    core::{
-        container::Container,
-        errors::TuioError,
-        osc_utils::{extract_float, extract_int},
-        tuio_time::TuioTime,
-    },
+use crate::core::{
+    container::Container,
+    errors::TuioError,
+    math::{Position, Size, Velocity},
+    osc_utils::{extract_float, extract_int},
+    tuio_time::TuioTime,
+    tuio11::profile::Profile,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -32,11 +30,11 @@ impl Blob {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct BlobProfile {
     session_id: i32,
-    position: Point2D<f32>,
-    velocity: Vector2D<f32>,
+    position: Position,
+    velocity: Velocity,
     acceleration: f32,
     angle: f32,
-    size: Vector2D<f32>,
+    size: Size,
     area: f32,
     rotation_speed: f32,
     rotation_acceleration: f32,
@@ -47,11 +45,11 @@ impl<'a> TryFrom<&'a OscMessage> for BlobProfile {
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
         let session_id = extract_int(message, 1)?;
-        let position = Point2D::new(extract_float(message, 2)?, extract_float(message, 3)?);
-        let velocity = Vector2D::new(extract_float(message, 4)?, extract_float(message, 5)?);
+        let position = Position::new(extract_float(message, 2)?, extract_float(message, 3)?);
+        let velocity = Velocity::new(extract_float(message, 4)?, extract_float(message, 5)?);
         let acceleration = extract_float(message, 6)?;
         let angle = extract_float(message, 7)?;
-        let size = Vector2D::new(extract_float(message, 8)?, extract_float(message, 9)?);
+        let size = Size::new(extract_float(message, 8)?, extract_float(message, 9)?);
         let area = extract_float(message, 10)?;
         let rotation_speed = extract_float(message, 11)?;
         let rotation_acceleration = extract_float(message, 12)?;
@@ -107,11 +105,11 @@ impl BlobProfile {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         session_id: i32,
-        position: Point2D<f32>,
+        position: Position,
         angle: f32,
-        size: Vector2D<f32>,
+        size: Size,
         area: f32,
-        velocity: Vector2D<f32>,
+        velocity: Velocity,
         rotation_speed: f32,
         acceleration: f32,
         rotation_acceleration: f32,
