@@ -15,13 +15,37 @@ pub struct Cursor {
 }
 
 impl Cursor {
-    pub fn new(start_time: &TuioTime, cursor: CursorProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, cursor: CursorProfile) -> Self {
         let container = Container::new(start_time, cursor.session_id, cursor.position);
         Self { container }
     }
 
-    pub fn update(&mut self, time: &TuioTime, cursor: &CursorProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, cursor: &CursorProfile) {
         self.container.update(time, cursor);
+    }
+
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    pub fn start_time(&self) -> TuioTime {
+        self.container.start_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.container.session_id
+    }
+
+    pub fn position(&self) -> Position {
+        self.container.position
+    }
+
+    pub fn velocity(&self) -> Velocity {
+        self.container.velocity
+    }
+
+    pub fn acceleration(&self) -> f32 {
+        self.container.acceleration
     }
 }
 

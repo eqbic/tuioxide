@@ -6,18 +6,18 @@ use crate::core::{
 
 /// Base container with attributes all tuio entities share.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Container {
-    start_time: TuioTime,
-    current_time: TuioTime,
-    session_id: i32,
-    position: Position,
+pub(crate) struct Container {
+    pub(crate) start_time: TuioTime,
+    pub(crate) current_time: TuioTime,
+    pub(crate) session_id: i32,
+    pub(crate) position: Position,
     last_position: Position,
-    velocity: Velocity,
-    acceleration: f32,
+    pub(crate) velocity: Velocity,
+    pub(crate) acceleration: f32,
 }
 
 impl Container {
-    pub fn new(start_time: &TuioTime, session_id: i32, position: Position) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, session_id: i32, position: Position) -> Self {
         Self {
             start_time: *start_time,
             current_time: *start_time,
@@ -29,7 +29,7 @@ impl Container {
         }
     }
 
-    pub fn update(&mut self, time: &TuioTime, profile: &impl Profile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, profile: &impl Profile) {
         self.current_time = *time;
         self.last_position = self.position;
         self.position = profile.position();
@@ -41,33 +41,12 @@ impl Container {
         }
     }
 
-    pub fn start_time(&self) -> TuioTime {
-        self.start_time
-    }
-
-    pub fn current_time(&self) -> TuioTime {
-        self.current_time
-    }
-
-    pub fn session_id(&self) -> i32 {
-        self.session_id
-    }
-
-    pub fn position(&self) -> Position {
-        self.position
-    }
-
     fn calculate_motion(&mut self, position: Position) {
         self.velocity = position - self.last_position;
         self.acceleration = self.velocity.speed()
     }
 
     fn should_calculate_motion(&self, position: Position, velocity: Velocity) -> bool {
-        let should_calculate = self.last_position != position && velocity.speed() == 0.0;
-        println!(
-            "should_calculate: {should_calculate}, speed: {:?}",
-            velocity.speed()
-        );
-        should_calculate
+        self.last_position != position && velocity.speed() == 0.0
     }
 }

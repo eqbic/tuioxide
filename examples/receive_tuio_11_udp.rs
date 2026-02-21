@@ -25,19 +25,29 @@ fn main() {
         if let Some(tuio_events) = processor.update(packet) {
             for event in tuio_events.cursor_events {
                 match event {
-                    CursorEvent::Add(cursor) => println!("New cursor: {cursor:?}"),
-                    CursorEvent::Update(cursor) => println!("Update cursor: {cursor:?}"),
-                    CursorEvent::Remove(cursor) => println!("Remove cursor: {cursor:?}"),
+                    CursorEvent::Add(cursor) => println!(
+                        "New cursor [{}] at position {:?}",
+                        cursor.session_id(),
+                        cursor.position()
+                    ),
+                    CursorEvent::Update(cursor) => println!(
+                        "Update cursor[{}] -> {:?}",
+                        cursor.session_id(),
+                        cursor.position()
+                    ),
+                    CursorEvent::Remove(cursor) => {
+                        println!("Remove cursor[{}]", cursor.session_id())
+                    }
                 }
             }
 
-            for event in tuio_events.object_events {
-                match event {
-                    ObjectEvent::Add(object) => println!("New object: {object:?}"),
-                    ObjectEvent::Update(object) => println!("Update object: {object:?}"),
-                    ObjectEvent::Remove(object) => println!("Remove object: {object:?}"),
-                }
-            }
+            // for event in tuio_events.object_events {
+            //     match event {
+            //         ObjectEvent::Add(object) => println!("New object: {object:?}"),
+            //         ObjectEvent::Update(object) => println!("Update object: {object:?}"),
+            //         ObjectEvent::Remove(object) => println!("Remove object: {object:?}"),
+            //     }
+            // }
         }
     }
 }

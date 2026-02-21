@@ -20,7 +20,7 @@ pub struct Blob {
 }
 
 impl Blob {
-    pub fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
         let container = Container::new(start_time, blob.session_id, blob.position);
         Self {
             container,
@@ -32,7 +32,7 @@ impl Blob {
         }
     }
 
-    pub fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
         self.container.update(time, blob);
         self.angle = blob.angle;
         self.size = blob.size;
@@ -40,10 +40,54 @@ impl Blob {
         self.rotation_speed = blob.rotation_speed;
         self.rotation_acceleration = blob.rotation_acceleration;
     }
+
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    pub fn start_time(&self) -> TuioTime {
+        self.container.start_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.container.session_id
+    }
+
+    pub fn position(&self) -> Position {
+        self.container.position
+    }
+
+    pub fn velocity(&self) -> Velocity {
+        self.container.velocity
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.angle
+    }
+
+    pub fn acceleration(&self) -> f32 {
+        self.container.acceleration
+    }
+
+    pub fn size(&self) -> Size {
+        self.size
+    }
+
+    pub fn area(&self) -> f32 {
+        self.area
+    }
+
+    pub fn rotation_speed(&self) -> f32 {
+        self.rotation_speed
+    }
+
+    pub fn rotation_acceleration(&self) -> f32 {
+        self.rotation_acceleration
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct BlobProfile {
+pub(crate) struct BlobProfile {
     session_id: i32,
     position: Position,
     velocity: Velocity,

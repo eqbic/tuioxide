@@ -19,7 +19,7 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(start_time: &TuioTime, object: ObjectProfile) -> Self {
+    pub(crate) fn new(start_time: &TuioTime, object: ObjectProfile) -> Self {
         let container = Container::new(start_time, object.session_id, object.position);
         Self {
             container,
@@ -30,17 +30,57 @@ impl Object {
         }
     }
 
-    pub fn update(&mut self, time: &TuioTime, object: &ObjectProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, object: &ObjectProfile) {
         self.container.update(time, object);
         self.class_id = object.class_id;
         self.angle = object.angle;
         self.rotation_speed = object.rotation_speed;
         self.rotation_acceleration = object.rotation_acceleration;
     }
+    
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    pub fn start_time(&self) -> TuioTime {
+        self.container.start_time
+    }
+
+    pub fn session_id(&self) -> i32 {
+        self.container.session_id
+    }
+
+    pub fn class_id(&self) -> i32 {
+        self.class_id
+    }
+
+    pub fn position(&self) -> Position {
+        self.container.position
+    }
+
+    pub fn velocity(&self) -> Velocity {
+        self.container.velocity
+    }
+
+    pub fn acceleration(&self) -> f32 {
+        self.container.acceleration
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.angle
+    }
+
+    pub fn rotation_speed(&self) -> f32 {
+        self.rotation_speed
+    }
+
+    pub fn rotation_acceleration(&self) -> f32 {
+        self.rotation_acceleration
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct ObjectProfile {
+pub(crate) struct ObjectProfile {
     session_id: i32,
     class_id: i32,
     position: Position,
