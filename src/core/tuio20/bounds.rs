@@ -182,18 +182,6 @@ impl Profile for BoundsProfile {
         self.session_id
     }
 
-    fn position(&self) -> Position {
-        self.position
-    }
-
-    fn velocity(&self) -> Velocity {
-        self.velocity.unwrap_or_default()
-    }
-
-    fn acceleration(&self) -> f32 {
-        self.acceleration.unwrap_or_default()
-    }
-
     fn address() -> String {
         "/tuio2/bnd".to_string()
     }

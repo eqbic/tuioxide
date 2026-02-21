@@ -181,18 +181,6 @@ impl Profile for TokenProfile {
         self.session_id
     }
 
-    fn position(&self) -> Position {
-        self.position
-    }
-
-    fn velocity(&self) -> Velocity {
-        self.velocity.unwrap_or_default()
-    }
-
-    fn acceleration(&self) -> f32 {
-        self.acceleration.unwrap_or_default()
-    }
-
     fn address() -> String {
         "/tuio2/tok".to_string()
     }

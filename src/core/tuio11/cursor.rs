@@ -104,18 +104,6 @@ impl Profile for CursorProfile {
     fn address() -> String {
         "/tuio/2Dcur".into()
     }
-
-    fn position(&self) -> Position {
-        self.position
-    }
-
-    fn velocity(&self) -> Velocity {
-        self.velocity
-    }
-
-    fn acceleration(&self) -> f32 {
-        self.acceleration
-    }
 }
 
 impl CursorProfile {

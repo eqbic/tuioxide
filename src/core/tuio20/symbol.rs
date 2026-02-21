@@ -1,6 +1,6 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
-use crate::core::{errors::TuioError, osc_utils::ArgCursor, tuio_time::TuioTime};
+use crate::core::{errors::TuioError, osc_utils::ArgCursor, profile::Profile, tuio_time::TuioTime};
 
 #[derive(Debug, Clone)]
 pub struct Symbol {
@@ -68,9 +68,13 @@ pub(crate) struct SymbolProfile {
     data: String,
 }
 
-impl SymbolProfile {
-    pub(crate) fn session_id(&self) -> i32 {
+impl Profile for SymbolProfile {
+    fn session_id(&self) -> i32 {
         self.session_id
+    }
+
+    fn address() -> String {
+        "/tuio2/sym".to_string()
     }
 }
 
@@ -92,7 +96,7 @@ impl<'a> TryFrom<&'a OscMessage> for SymbolProfile {
 impl From<SymbolProfile> for OscPacket {
     fn from(val: SymbolProfile) -> Self {
         OscPacket::Message(OscMessage {
-            addr: "/tuio2/sym".to_string(),
+            addr: SymbolProfile::address(),
             args: vec![
                 OscType::Int(val.session_id),
                 OscType::Int(val.type_user_id),

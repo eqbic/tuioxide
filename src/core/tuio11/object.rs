@@ -157,18 +157,6 @@ impl Profile for ObjectProfile {
     fn address() -> String {
         "/tuio/2Dobj".into()
     }
-
-    fn position(&self) -> Position {
-        self.position
-    }
-
-    fn velocity(&self) -> Velocity {
-        self.velocity
-    }
-
-    fn acceleration(&self) -> f32 {
-        self.acceleration
-    }
 }
 
 impl ObjectProfile {
