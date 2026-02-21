@@ -6,22 +6,30 @@ use crate::core::{
     math::{Position, Velocity},
     osc_utils::ArgCursor,
     profile::Profile,
+    translation::Translation,
     tuio_time::TuioTime,
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct Cursor {
     container: Container,
+    translation: Translation,
 }
 
 impl Cursor {
     pub(crate) fn new(start_time: &TuioTime, cursor: CursorProfile) -> Self {
         let container = Container::new(start_time, cursor.session_id, cursor.position);
-        Self { container }
+        let translation = Translation::new(cursor.position, cursor.velocity, cursor.acceleration);
+        Self {
+            container,
+            translation,
+        }
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, cursor: &CursorProfile) {
         self.container.update(time, cursor);
+        self.translation
+            .update(cursor.position, cursor.velocity, cursor.acceleration);
     }
 
     pub fn current_time(&self) -> TuioTime {
@@ -37,15 +45,15 @@ impl Cursor {
     }
 
     pub fn position(&self) -> Position {
-        self.container.position
+        self.translation.position
     }
 
     pub fn velocity(&self) -> Velocity {
-        self.container.velocity
+        self.translation.velocity
     }
 
     pub fn acceleration(&self) -> f32 {
-        self.container.acceleration
+        self.translation.acceleration
     }
 }
 

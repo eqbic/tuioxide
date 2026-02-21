@@ -6,6 +6,8 @@ use crate::core::{
     math::{Position, Velocity},
     osc_utils::ArgCursor,
     profile::Profile,
+    rotation::Rotation,
+    translation::Translation,
     tuio_time::TuioTime,
 };
 
@@ -13,29 +15,37 @@ use crate::core::{
 pub struct Object {
     container: Container,
     class_id: i32,
-    angle: f32,
-    rotation_speed: f32,
-    rotation_acceleration: f32,
+    translation: Translation,
+    rotation: Rotation,
 }
 
 impl Object {
     pub(crate) fn new(start_time: &TuioTime, object: ObjectProfile) -> Self {
         let container = Container::new(start_time, object.session_id, object.position);
+        let translation = Translation::new(object.position, object.velocity, object.acceleration);
+        let rotation = Rotation::new(
+            object.angle,
+            object.rotation_speed,
+            object.rotation_acceleration,
+        );
         Self {
             container,
             class_id: object.class_id,
-            angle: object.angle,
-            rotation_speed: object.rotation_speed,
-            rotation_acceleration: object.rotation_acceleration,
+            translation,
+            rotation,
         }
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, object: &ObjectProfile) {
         self.container.update(time, object);
         self.class_id = object.class_id;
-        self.angle = object.angle;
-        self.rotation_speed = object.rotation_speed;
-        self.rotation_acceleration = object.rotation_acceleration;
+        self.translation
+            .update(object.position, object.velocity, object.acceleration);
+        self.rotation.update(
+            object.angle,
+            object.rotation_speed,
+            object.rotation_acceleration,
+        );
     }
 
     pub fn current_time(&self) -> TuioTime {
@@ -55,27 +65,27 @@ impl Object {
     }
 
     pub fn position(&self) -> Position {
-        self.container.position
+        self.translation.position
     }
 
     pub fn velocity(&self) -> Velocity {
-        self.container.velocity
+        self.translation.velocity
     }
 
     pub fn acceleration(&self) -> f32 {
-        self.container.acceleration
+        self.translation.acceleration
     }
 
     pub fn angle(&self) -> f32 {
-        self.angle
+        self.rotation.angle
     }
 
     pub fn rotation_speed(&self) -> f32 {
-        self.rotation_speed
+        self.rotation.speed
     }
 
     pub fn rotation_acceleration(&self) -> f32 {
-        self.rotation_acceleration
+        self.rotation.acceleration
     }
 }
 

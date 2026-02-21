@@ -6,39 +6,42 @@ use crate::core::{
     math::{Position, Size, Velocity},
     osc_utils::ArgCursor,
     profile::Profile,
+    rotation::Rotation,
+    translation::Translation,
     tuio_time::TuioTime,
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct Blob {
     container: Container,
-    angle: f32,
+    translation: Translation,
+    rotation: Rotation,
     size: Size,
     area: f32,
-    rotation_speed: f32,
-    rotation_acceleration: f32,
 }
 
 impl Blob {
     pub(crate) fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
         let container = Container::new(start_time, blob.session_id, blob.position);
+        let translation = Translation::new(blob.position, blob.velocity, blob.acceleration);
+        let rotation = Rotation::new(blob.angle, blob.rotation_speed, blob.rotation_acceleration);
         Self {
             container,
-            angle: blob.angle,
+            translation,
+            rotation,
             size: blob.size,
             area: blob.area,
-            rotation_speed: blob.rotation_speed,
-            rotation_acceleration: blob.rotation_acceleration,
         }
     }
 
     pub(crate) fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
         self.container.update(time, blob);
-        self.angle = blob.angle;
+        self.translation
+            .update(blob.position, blob.velocity, blob.acceleration);
+        self.rotation
+            .update(blob.angle, blob.rotation_speed, blob.rotation_acceleration);
         self.size = blob.size;
         self.area = blob.area;
-        self.rotation_speed = blob.rotation_speed;
-        self.rotation_acceleration = blob.rotation_acceleration;
     }
 
     pub fn current_time(&self) -> TuioTime {
@@ -54,19 +57,27 @@ impl Blob {
     }
 
     pub fn position(&self) -> Position {
-        self.container.position
+        self.translation.position
     }
 
     pub fn velocity(&self) -> Velocity {
-        self.container.velocity
-    }
-
-    pub fn angle(&self) -> f32 {
-        self.angle
+        self.translation.velocity
     }
 
     pub fn acceleration(&self) -> f32 {
-        self.container.acceleration
+        self.translation.acceleration
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.rotation.angle
+    }
+
+    pub fn rotation_speed(&self) -> f32 {
+        self.rotation.speed
+    }
+
+    pub fn rotation_acceleration(&self) -> f32 {
+        self.rotation.acceleration
     }
 
     pub fn size(&self) -> Size {
@@ -75,14 +86,6 @@ impl Blob {
 
     pub fn area(&self) -> f32 {
         self.area
-    }
-
-    pub fn rotation_speed(&self) -> f32 {
-        self.rotation_speed
-    }
-
-    pub fn rotation_acceleration(&self) -> f32 {
-        self.rotation_acceleration
     }
 }
 
