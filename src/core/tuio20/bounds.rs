@@ -9,7 +9,7 @@ use crate::core::{
     tuio_time::TuioTime,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Bounds {
     container: Container,
 }
