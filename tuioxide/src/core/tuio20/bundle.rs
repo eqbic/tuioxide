@@ -2,14 +2,12 @@ use std::collections::HashSet;
 
 use rosc::OscMessage;
 
-use crate::{
-    core::tuio20::{
+use crate::core::{
+    errors::TuioError,
+    osc_utils::ArgCursor,
+    tuio_time::TuioTime,
+    tuio20::{
         bounds::BoundsProfile, pointer::PointerProfile, symbol::SymbolProfile, token::TokenProfile,
-    },
-    core::{
-        errors::TuioError,
-        osc_utils::{extract_int, extract_string, extract_time},
-        tuio_time::TuioTime,
     },
 };
 
@@ -54,12 +52,13 @@ impl<'a> TryFrom<&'a OscMessage> for Frame {
     type Error = TuioError;
 
     fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let frame_id = extract_int(message, 0)?;
-        let time = extract_time(message, 1)?;
-        let dim_combined = extract_int(message, 2)?;
+        let mut args = ArgCursor::new(message, 0);
+        let frame_id = args.next_int()?;
+        let time = args.next_time()?;
+        let dim_combined = args.next_int()?;
         let dim_x = ((dim_combined >> 16) & 0xFFFF) as u16;
         let dim_y = (dim_combined & 0xFFFF) as u16;
-        let source = extract_string(message, 3)?;
+        let source = args.next_string()?;
         let frame = Frame {
             frame_id,
             time,
@@ -116,22 +115,22 @@ impl TuioBundle {
     }
 
     pub fn add_pointer(&mut self, message: &OscMessage) {
-        let pointer = PointerProfile::from_osc_message(message).unwrap();
+        let pointer = PointerProfile::try_from(message).unwrap();
         self.entities.pointers.push(pointer);
     }
 
     pub fn add_token(&mut self, message: &OscMessage) {
-        let token = TokenProfile::from_osc_message(message).unwrap();
+        let token = TokenProfile::try_from(message).unwrap();
         self.entities.tokens.push(token);
     }
 
     pub fn add_bounds(&mut self, message: &OscMessage) {
-        let bound = BoundsProfile::from_osc_message(message).unwrap();
+        let bound = BoundsProfile::try_from(message).unwrap();
         self.entities.bounds.push(bound);
     }
 
     pub fn add_symbol(&mut self, message: &OscMessage) {
-        let symbol = SymbolProfile::from_osc_message(message).unwrap();
+        let symbol = SymbolProfile::try_from(message).unwrap();
         self.entities.symbols.push(symbol);
     }
 }
