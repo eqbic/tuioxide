@@ -3,16 +3,17 @@ use std::{
     collections::{HashMap, HashSet},
 };
 
-use log::debug;
+use log::{debug, warn};
 use rosc::OscPacket;
 
 use crate::core::{
     profile::Profile,
     tuio_time::TuioTime,
     tuio11::{
+        blob::Blob,
         bundle::{EntityType, TuioBundle, TuioBundleType},
         cursor::Cursor,
-        event::{CursorEvent, ObjectEvent},
+        event::{BlobEvent, CursorEvent, ObjectEvent},
         object::Object,
         osc_decoder_encoder::OscDecoder,
     },
@@ -23,6 +24,7 @@ use crate::core::{
 pub struct TuioEvents {
     pub cursor_events: Vec<CursorEvent>,
     pub object_events: Vec<ObjectEvent>,
+    pub blob_events: Vec<BlobEvent>,
 }
 
 pub struct Processor {
@@ -30,6 +32,7 @@ pub struct Processor {
     current_time: Cell<TuioTime>,
     cursors: RefCell<HashMap<i32, Cursor>>,
     objects: RefCell<HashMap<i32, Object>>,
+    blobs: RefCell<HashMap<i32, Blob>>,
 }
 
 impl Default for Processor {
@@ -45,6 +48,7 @@ impl Processor {
             current_time: Cell::new(TuioTime::from_system_time().unwrap()),
             cursors: RefCell::new(HashMap::new()),
             objects: RefCell::new(HashMap::new()),
+            blobs: RefCell::new(HashMap::new()),
         }
     }
 
@@ -101,8 +105,14 @@ impl Processor {
                             &current_time,
                         );
                     }
-                    TuioBundleType::Blob => {}
-                    TuioBundleType::Unknown => {}
+                    TuioBundleType::Blob => {
+                        let mut current_blobs = self.blobs.borrow_mut();
+                        events.blob_events =
+                            process_blobs(&mut current_blobs, alive, &tuio_bundle, &current_time);
+                    }
+                    TuioBundleType::Unknown => {
+                        warn!("Unknown Tuio Bundle Type")
+                    }
                 }
                 return Some(events);
             }
@@ -172,6 +182,38 @@ fn process_objects(
                     let new_object = Object::new(current_time, *active_object);
                     current_objects.insert(session_id, new_object);
                     let event = ObjectEvent::Add(new_object);
+                    events.push(event);
+                }
+            };
+        }
+    }
+    events
+}
+
+fn process_blobs(
+    current_blobs: &mut RefMut<HashMap<i32, Blob>>,
+    alive: &HashSet<i32>,
+    tuio_bundle: &TuioBundle,
+    current_time: &TuioTime,
+) -> Vec<BlobEvent> {
+    let mut events = Vec::new();
+    retain_alive(current_blobs, alive).iter().for_each(|blob| {
+        let event = BlobEvent::Remove(*blob);
+        events.push(event);
+    });
+    if let Some(EntityType::Blob(blobs)) = tuio_bundle.tuio_entities() {
+        for active_blob in blobs {
+            match current_blobs.get_mut(&active_blob.session_id()) {
+                Some(blob) => {
+                    blob.update(current_time, active_blob);
+                    let event = BlobEvent::Update(*blob);
+                    events.push(event);
+                }
+                None => {
+                    let session_id = active_blob.session_id();
+                    let new_blob = Blob::new(current_time, *active_blob);
+                    current_blobs.insert(session_id, new_blob);
+                    let event = BlobEvent::Add(new_blob);
                     events.push(event);
                 }
             };

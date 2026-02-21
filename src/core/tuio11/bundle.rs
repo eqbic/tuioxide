@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use log::warn;
 use rosc::{OscMessage, OscType};
 
 use crate::{
@@ -17,14 +18,14 @@ pub enum TuioBundleType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum EntityType {
+pub(crate) enum EntityType {
     Cursor(Vec<CursorProfile>),
     Object(Vec<ObjectProfile>),
     Blob(Vec<BlobProfile>),
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct TuioBundle {
+pub(crate) struct TuioBundle {
     tuio_type: TuioBundleType,
     source: Option<String>,
     alive: HashSet<i32>,
@@ -33,35 +34,35 @@ pub struct TuioBundle {
 }
 
 impl TuioBundle {
-    pub fn profile_type(&self) -> TuioBundleType {
+    pub(crate) fn profile_type(&self) -> TuioBundleType {
         self.tuio_type
     }
 
-    pub fn source(&self) -> &Option<String> {
+    pub(crate) fn source(&self) -> &Option<String> {
         &self.source
     }
 
-    pub fn alive(&self) -> &HashSet<i32> {
+    pub(crate) fn alive(&self) -> &HashSet<i32> {
         &self.alive
     }
 
-    pub fn tuio_entities(&self) -> &Option<EntityType> {
+    pub(crate) fn tuio_entities(&self) -> &Option<EntityType> {
         &self.set
     }
 
-    pub fn fseq(&self) -> i32 {
+    pub(crate) fn fseq(&self) -> i32 {
         self.fseq
     }
 
-    pub fn set_type(&mut self, tuio_type: TuioBundleType) {
+    pub(crate) fn set_type(&mut self, tuio_type: TuioBundleType) {
         self.tuio_type = tuio_type
     }
 
-    pub fn set_source(&mut self, message: &OscMessage) {
+    pub(crate) fn set_source(&mut self, message: &OscMessage) {
         self.source = message.args.get(1).and_then(|arg| arg.clone().string());
     }
 
-    pub fn set_alive(&mut self, message: &OscMessage) {
+    pub(crate) fn set_alive(&mut self, message: &OscMessage) {
         self.alive = message
             .args
             .iter()
@@ -70,7 +71,7 @@ impl TuioBundle {
             .collect();
     }
 
-    pub fn set_set(&mut self, message: &OscMessage) -> Result<(), TuioError> {
+    pub(crate) fn set_set(&mut self, message: &OscMessage) -> Result<(), TuioError> {
         match &self.tuio_type {
             TuioBundleType::Cursor => {
                 if let EntityType::Cursor(set) =
@@ -95,8 +96,7 @@ impl TuioBundle {
                 }
             }
             TuioBundleType::Blob => {
-                if let EntityType::Blob(set) =
-                    self.set.get_or_insert(EntityType::Object(Vec::new()))
+                if let EntityType::Blob(set) = self.set.get_or_insert(EntityType::Blob(Vec::new()))
                 {
                     if message.args.len() != 13 {
                         return Err(TuioError::MissingArguments(message.clone()));
@@ -105,12 +105,14 @@ impl TuioBundle {
                     set.push(blob);
                 }
             }
-            TuioBundleType::Unknown => {}
+            TuioBundleType::Unknown => {
+                warn!("Unknown Tuio Bundle Type")
+            }
         }
         Ok(())
     }
 
-    pub fn set_fseq(&mut self, message: &OscMessage) -> Result<(), TuioError> {
+    pub(crate) fn set_fseq(&mut self, message: &OscMessage) -> Result<(), TuioError> {
         if let Some(OscType::Int(fseq)) = message.args.get(1) {
             self.fseq = *fseq;
             Ok(())
