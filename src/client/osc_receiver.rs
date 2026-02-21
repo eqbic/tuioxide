@@ -49,10 +49,13 @@ impl Default for UdpOscReceiver {
 
 #[cfg(feature = "websocket")]
 pub mod websocket {
+    use log::{info, warn};
     use rosc::OscPacket;
     use std::{
         io,
         net::{Ipv4Addr, TcpStream},
+        thread::sleep,
+        time::Duration,
     };
     use tungstenite::{ClientRequestBuilder, Message, WebSocket, connect, stream::MaybeTlsStream};
 
@@ -61,14 +64,36 @@ pub mod websocket {
     #[derive(Debug)]
     pub struct WebsocketOscReceiver {
         socket: WebSocket<MaybeTlsStream<TcpStream>>,
+        remote: Ipv4Addr,
+        port: u16,
+    }
+
+    impl WebsocketOscReceiver {
+        fn connect_with_retry(remote: Ipv4Addr, port: u16) -> WebSocket<MaybeTlsStream<TcpStream>> {
+            let uri = format!("ws://{remote}:{port}");
+            loop {
+                match connect(uri.as_str()) {
+                    Ok((socket, _)) => {
+                        info!("Successfully connected to {uri}");
+                        return socket;
+                    }
+                    Err(e) => {
+                        warn!("Could not connect to {uri}: {e}. Try again...");
+                        sleep(Duration::from_secs(2));
+                    }
+                }
+            }
+        }
     }
 
     impl OscReceiver for WebsocketOscReceiver {
         fn new(remote: Ipv4Addr, port: u16) -> Self {
-            let uri = format!("ws://{remote}:{port}").parse().unwrap();
-            let builder = ClientRequestBuilder::new(uri);
-            let (socket, _) = connect(builder).unwrap();
-            Self { socket }
+            let socket = WebsocketOscReceiver::connect_with_retry(remote, port);
+            Self {
+                socket,
+                remote,
+                port,
+            }
         }
 
         fn recv(&mut self) -> Result<OscPacket, io::Error> {
