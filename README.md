@@ -48,7 +48,7 @@ use tuioxide::{
 };
 
 fn main() {
-    let mut client = Client::default(); // listens on 127.0.0.1:3333
+    let mut client = Client::default();
     loop {
         let events = client.update().unwrap();
         for event in events.cursor_events {
@@ -81,7 +81,7 @@ use tuioxide::{
 };
 
 fn main() {
-    let mut client = Client::default(); // listens on 127.0.0.1:3333
+    let mut client = Client::default()
     loop {
         let events = client.update().unwrap();
         for event in events.pointer_events {
@@ -116,7 +116,6 @@ use tuioxide::{
 };
 
 fn main() {
-    // Connects to ws://127.0.0.1:3333 with automatic retry
     let mut client = Client::new(WebsocketOscReceiver::default());
     loop {
         let events = client.update().unwrap();
