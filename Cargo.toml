@@ -1,6 +1,6 @@
 [package]
 name = "tuioxide"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Erich Querner"]
 description = "A Rust implementation of the TUIO 1.1 and TUIO 2.0 protocols, providing both client and server components for sending and receiving multitouch and tangible object data over OSC."
@@ -11,7 +11,7 @@ license = "MIT"
 repository = "https://codeberg.org/qbic/tuioxide"
 
 [features]
-default = ["websocket"]
+default = []
 websocket = ["dep:tungstenite"]
 
 [dependencies]
