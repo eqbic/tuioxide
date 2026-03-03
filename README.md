@@ -15,20 +15,26 @@ TUIO is an open framework that defines a common protocol and API for tangible mu
 - **Event-driven API** — receive `Add`, `Update`, and `Remove` events for each entity type
 - **Generic client** — plug in any transport that implements `OscReceiver`
 
+## Roadmap
+- [x] Tuio 1.1
+- [x] Tuio 2.0
+- [x] Client (Udp/WebSocket)
+- [ ] Server (Udp/WebSocket)
+
 ## Installation
 
 Add tuioxide to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tuioxide = { version = "0.1.0" }
+tuioxide = { version = "0.2.0" }
 ```
 
 To enable WebSocket support, enable the `websocket` feature:
 
 ```toml
 [dependencies]
-tuioxide = { version = "0.1.0", features = ["websocket"] }
+tuioxide = { version = "0.2.0", features = ["websocket"] }
 ```
 
 ## Usage
