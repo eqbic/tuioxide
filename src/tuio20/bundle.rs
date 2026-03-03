@@ -2,10 +2,8 @@ use std::collections::HashSet;
 
 use rosc::OscMessage;
 
-use crate::core::{
-    errors::TuioError,
-    osc_utils::ArgCursor,
-    tuio_time::TuioTime,
+use crate::{
+    core::{ArgCursor, TuioError, TuioTime},
     tuio20::{
         bounds::BoundsProfile, pointer::PointerProfile, symbol::SymbolProfile, token::TokenProfile,
     },

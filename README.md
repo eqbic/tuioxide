@@ -38,7 +38,10 @@ All clients listen in a blocking loop and return a batch of events each time `up
 ### TUIO 1.1 over UDP
 
 ```rust
-use tuioxide::{client::tuio11::client::Client, core::tuio11::event::CursorEvent};
+use tuioxide::{
+    tuio11::Client,
+    tuio11::event::CursorEvent,
+};
 
 fn main() {
     let mut client = Client::default(); // listens on 127.0.0.1:3333
@@ -69,8 +72,8 @@ fn main() {
 
 ```rust
 use tuioxide::{
-    client::tuio20::client::Client,
-    core::tuio20::events::{PointerEvent, TokenEvent},
+    tuio20::Client,
+    tuio20::events::{PointerEvent, TokenEvent},
 };
 
 fn main() {
@@ -104,8 +107,8 @@ Enable the `websocket` feature and pass a `WebsocketOscReceiver` to the client:
 
 ```rust
 use tuioxide::{
-    client::{WebsocketOscReceiver, tuio11::client::Client},
-    core::tuio11::event::CursorEvent,
+    core::{WebsocketOscReceiver, tuio11::Client},
+    tuio11::event::CursorEvent,
 };
 
 fn main() {
@@ -125,7 +128,7 @@ Implement the `OscReceiver` trait to use any transport layer:
 ```rust
 use std::{io, net::Ipv4Addr};
 use rosc::OscPacket;
-use tuioxide::client::osc_receiver::OscReceiver;
+use tuioxide::core::osc_receiver::OscReceiver;
 
 struct MyReceiver { /* ... */ }
 
@@ -138,7 +141,7 @@ impl OscReceiver for MyReceiver {
 Then pass it to any client:
 
 ```rust
-let mut client = tuioxide::client::tuio11::client::Client::new(MyReceiver::new(...));
+let mut client = tuioxide::tuio11::Client::new(MyReceiver::new(...));
 ```
 
 ## Examples

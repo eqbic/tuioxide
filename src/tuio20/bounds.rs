@@ -1,16 +1,16 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    container::Container,
-    errors::TuioError,
-    math::{Position, Size, Velocity},
-    osc_utils::ArgCursor,
-    profile::Profile,
-    rotation::Rotation,
-    translation::Translation,
-    tuio_time::TuioTime,
+    ArgCursor, Container, Position, Profile, Rotation, Size, Translation, TuioError, TuioTime,
+    Velocity,
 };
 
+/// A TUIO 2.0 bounds entity, representing the bounding rectangle of a tangible
+/// object on the surface.
+///
+/// A `Bounds` tracks positional and rotational state over time, including an
+/// optional velocity, rotation speed, and their respective accelerations.
+/// It corresponds to the `/tuio2/bnd` OSC address.
 #[derive(Debug, Clone, Copy)]
 pub struct Bounds {
     container: Container,
@@ -59,46 +59,58 @@ impl Bounds {
         self.area = bounds.area;
     }
 
+    /// Returns the [`TuioTime`] at which this bounds entity first appeared.
     pub fn start_time(&self) -> TuioTime {
         self.container.start_time
     }
 
+    /// Returns the [`TuioTime`] of the most recent update to this bounds entity.
     pub fn current_time(&self) -> TuioTime {
         self.container.current_time
     }
 
+    /// Returns the session ID uniquely identifying this bounds entity within the
+    /// current TUIO session.
     pub fn session_id(&self) -> i32 {
         self.container.session_id
     }
 
+    /// Returns the current normalized position of the bounding rectangle's center.
     pub fn position(&self) -> Position {
         self.translation.position
     }
 
+    /// Returns the current 2D velocity vector of this bounds entity.
     pub fn velocity(&self) -> Velocity {
         self.translation.velocity
     }
 
+    /// Returns the scalar speed (Euclidean magnitude of the velocity vector).
     pub fn speed(&self) -> f32 {
         self.translation.velocity.speed()
     }
 
+    /// Returns the current rotation angle of this bounds entity, in radians.
     pub fn angle(&self) -> f32 {
         self.rotation.angle
     }
 
+    /// Returns the current rotation speed of this bounds entity, in radians per frame.
     pub fn rotation_speed(&self) -> f32 {
         self.rotation.speed
     }
 
+    /// Returns the current rotational acceleration of this bounds entity.
     pub fn rotation_acceleration(&self) -> f32 {
         self.rotation.acceleration
     }
 
+    /// Returns the normalized size (width and height) of the bounding rectangle.
     pub fn size(&self) -> Size {
         self.size
     }
 
+    /// Returns the normalized area of the bounding rectangle.
     pub fn area(&self) -> f32 {
         self.area
     }
@@ -178,6 +190,7 @@ impl From<BoundsProfile> for OscPacket {
         })
     }
 }
+
 impl Profile for BoundsProfile {
     fn session_id(&self) -> i32 {
         self.session_id

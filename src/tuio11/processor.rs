@@ -6,46 +6,15 @@ use std::{
 use log::{debug, warn};
 use rosc::OscPacket;
 
-use crate::core::{
-    profile::Profile,
-    tuio_time::TuioTime,
+use crate::{
+    core::{Profile, TuioTime, retain_alive},
     tuio11::{
-        blob::Blob,
+        Blob, Cursor, Object,
         bundle::{EntityType, TuioBundle, TuioBundleType},
-        cursor::Cursor,
-        event::{BlobEvent, CursorEvent, ObjectEvent},
-        object::Object,
+        event::{BlobEvent, CursorEvent, ObjectEvent, TuioEvents},
         osc_decoder_encoder::OscDecoder,
     },
-    utils::retain_alive,
 };
-
-/// A collection of TUIO 1.1 events produced by processing a single OSC bundle.
-///
-/// Each field contains the events of the corresponding entity type that occurred
-/// in the frame: cursors, objects, and blobs.
-/// Fields will be empty if no events of that type
-/// occurred in the frame.
-#[derive(Debug, Default)]
-pub struct TuioEvents {
-    /// Events for TUIO 1.1 cursor entities (`/tuio/2Dcur`).
-    ///
-    /// Each [`CursorEvent`] is either an [`Add`](CursorEvent::Add),
-    /// [`Update`](CursorEvent::Update), or [`Remove`](CursorEvent::Remove).
-    pub cursor_events: Vec<CursorEvent>,
-
-    /// Events for TUIO 1.1 object entities (`/tuio/2Dobj`).
-    ///
-    /// Each [`ObjectEvent`] is either an [`Add`](ObjectEvent::Add),
-    /// [`Update`](ObjectEvent::Update), or [`Remove`](ObjectEvent::Remove).
-    pub object_events: Vec<ObjectEvent>,
-
-    /// Events for TUIO 1.1 blob entities (`/tuio/2Dblb`).
-    ///
-    /// Each [`BlobEvent`] is either an [`Add`](BlobEvent::Add),
-    /// [`Update`](BlobEvent::Update), or [`Remove`](BlobEvent::Remove).
-    pub blob_events: Vec<BlobEvent>,
-}
 
 #[derive(Debug, Clone)]
 pub(crate) struct Processor {

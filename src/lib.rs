@@ -17,15 +17,15 @@
 //!
 //! ## Crate Structure
 //!
-//! - [`client`] — High-level clients for receiving and processing TUIO event streams.
 //! - [`core`] — Core data types, profiles, OSC decoding/encoding, and math primitives.
-//! - [`server`] — (Reserved) Server-side helpers for broadcasting TUIO messages.
+//! - [`tuio11`] — TUIO 1.1 client and event processing.
+//! - [`tuio20`] — TUIO 2.0 client and event processing.
 //!
 //! ## Quick Start
 //!
 //! ```no_run
 //! use std::net::Ipv4Addr;
-//! use tuioxide::client::tuio11::client::Client;
+//! use tuioxide::tuio11::Client;
 //! use tuioxide::client::osc_receiver::{OscReceiver, UdpOscReceiver};
 //!
 //! let receiver = UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
@@ -40,6 +40,6 @@
 //! }
 //! ```
 
-pub mod client;
 pub mod core;
-pub mod server;
+pub mod tuio11;
+pub mod tuio20;

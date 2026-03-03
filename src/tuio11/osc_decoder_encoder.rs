@@ -2,10 +2,10 @@ use rosc::{OscBundle, OscMessage, OscPacket, OscTime, OscType};
 
 use std::{iter, time::SystemTime};
 
-use crate::core::profile::Profile;
-use crate::core::tuio11::bundle::{TuioBundle, TuioBundleType};
+use crate::core::Profile;
 
-use crate::core::errors::TuioError;
+use crate::core::TuioError;
+use crate::tuio11::bundle::{TuioBundle, TuioBundleType};
 
 pub(crate) struct OscDecoder;
 
@@ -99,8 +99,8 @@ impl OscEncoder {
 #[cfg(test)]
 mod tests {
 
-    use crate::core::{
-        math::{Position, Velocity},
+    use crate::{
+        core::{Position, Velocity},
         tuio11::{bundle::EntityType, cursor::CursorProfile, object::ObjectProfile},
     };
 

@@ -1,13 +1,7 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    container::Container,
-    errors::TuioError,
-    math::{Position, Velocity},
-    osc_utils::ArgCursor,
-    profile::Profile,
-    translation::Translation,
-    tuio_time::TuioTime,
+    ArgCursor, Container, Position, Profile, Translation, TuioError, TuioTime, Velocity,
 };
 
 /// A TUIO 1.1 cursor, representing a single touch point on a surface.
@@ -17,7 +11,7 @@ use crate::core::{
 /// the most common entity type in TUIO 1.1 sessions.
 ///
 /// Cursors are created and updated by the TUIO 1.1 [`Processor`](crate::client::tuio11::processor::Processor)
-/// and surfaced to the application via [`CursorEvent`](crate::core::tuio11::event::CursorEvent).
+/// and surfaced to the application via [`CursorEvent`](crate::tuio11::event::CursorEvent).
 #[derive(Debug, Clone, Copy)]
 pub struct Cursor {
     container: Container,

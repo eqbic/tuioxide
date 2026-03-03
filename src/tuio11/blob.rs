@@ -1,14 +1,8 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    container::Container,
-    errors::TuioError,
-    math::{Position, Size, Velocity},
-    osc_utils::ArgCursor,
-    profile::Profile,
-    rotation::Rotation,
-    translation::Translation,
-    tuio_time::TuioTime,
+    ArgCursor, Container, Position, Profile, Rotation, Size, Translation, TuioError, TuioTime,
+    Velocity,
 };
 
 /// A TUIO 1.1 blob entity, corresponding to the `/tuio/2Dblb` profile.
@@ -19,7 +13,7 @@ use crate::core::{
 /// motion, and a scalar `area` that describes how much surface it covers.
 ///
 /// Blobs are produced by the TUIO 1.1 client processor and delivered via
-/// [`BlobEvent`](crate::core::tuio11::event::BlobEvent).
+/// [`BlobEvent`](crate::tuio11::event::BlobEvent).
 #[derive(Debug, Clone, Copy)]
 pub struct Blob {
     container: Container,

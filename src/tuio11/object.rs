@@ -1,14 +1,7 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    container::Container,
-    errors::TuioError,
-    math::{Position, Velocity},
-    osc_utils::ArgCursor,
-    profile::Profile,
-    rotation::Rotation,
-    translation::Translation,
-    tuio_time::TuioTime,
+    ArgCursor, Container, Position, Profile, Rotation, Translation, TuioError, TuioTime, Velocity,
 };
 
 /// A TUIO 1.1 tangible object tracked on a surface (`/tuio/2Dobj`).
@@ -20,7 +13,7 @@ use crate::core::{
 /// and rotation acceleration data.
 ///
 /// Instances are created and updated internally by the TUIO 1.1 processor and
-/// surfaced to the application via [`ObjectEvent`](crate::core::tuio11::event::ObjectEvent).
+/// surfaced to the application via [`ObjectEvent`](crate::tuio11::event::ObjectEvent).
 #[derive(Debug, Clone, Copy)]
 pub struct Object {
     container: Container,

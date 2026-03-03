@@ -4,8 +4,8 @@ use log::warn;
 use rosc::{OscMessage, OscType};
 
 use crate::{
-    core::errors::TuioError,
-    core::tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
+    core::TuioError,
+    tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
 };
 
 #[derive(Debug, Clone, Default, Copy)]

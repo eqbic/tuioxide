@@ -16,7 +16,7 @@ use std::collections::{HashMap, HashSet};
 ///
 /// A [`Vec`] containing the values that were removed from `current` because
 /// their keys were absent from `alive`.
-pub fn retain_alive<T>(current: &mut HashMap<i32, T>, alive: &HashSet<i32>) -> Vec<T> {
+pub(crate) fn retain_alive<T>(current: &mut HashMap<i32, T>, alive: &HashSet<i32>) -> Vec<T> {
     let keys_to_remove: Vec<i32> = current
         .keys()
         .filter(|key| !alive.contains(key))

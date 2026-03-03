@@ -13,7 +13,7 @@ use crate::core::constants::{MICRO_PER_MILLI, MICRO_PER_SECOND, MILLI_PER_SECOND
 /// # Examples
 ///
 /// ```
-/// use tuioxide::core::tuio_time::TuioTime;
+/// use tuioxide::core::TuioTime;
 ///
 /// let t = TuioTime::new(1, 500_000);
 /// assert_eq!(t.seconds(), 1);

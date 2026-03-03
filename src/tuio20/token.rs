@@ -1,16 +1,18 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    container::Container,
-    errors::TuioError,
-    math::{Position, Velocity},
-    osc_utils::ArgCursor,
-    profile::Profile,
-    rotation::Rotation,
-    translation::Translation,
-    tuio_time::TuioTime,
+    ArgCursor, Container, Position, Profile, Rotation, Translation, TuioError, TuioTime, Velocity,
 };
 
+/// A TUIO 2.0 token entity, representing a tagged physical object on a surface.
+///
+/// Tokens are distinguished from pointers by carrying identity information
+/// (`type_user_id` and `component_id`) that links them to a known physical
+/// object type. They track position, orientation, and optionally velocity and
+/// acceleration.
+///
+/// Token instances are created and updated by the client processor in response
+/// to incoming `/tuio2/tok` OSC messages.
 #[derive(Debug, Clone, Copy)]
 pub struct Token {
     container: Container,
@@ -58,51 +60,82 @@ impl Token {
         self.component_id = token.component_id;
     }
 
+    /// Returns the time at which this token first appeared in the session.
     pub fn start_time(&self) -> TuioTime {
         self.container.start_time
     }
 
+    /// Returns the time at which this token was last updated.
     pub fn current_time(&self) -> TuioTime {
         self.container.current_time
     }
 
+    /// Returns the session ID assigned to this token by the TUIO source.
+    ///
+    /// Session IDs uniquely identify an active entity within a session and
+    /// are used to correlate `alive`, `set`, and removal messages.
     pub fn session_id(&self) -> i32 {
         self.container.session_id
     }
 
+    /// Returns the combined type and user ID of this token.
+    ///
+    /// The upper 16 bits encode the type ID and the lower 16 bits encode
+    /// the user ID, as per the TUIO 2.0 specification.
     pub fn type_user_id(&self) -> i32 {
         self.type_user_id
     }
 
+    /// Returns the component ID of this token.
+    ///
+    /// The component ID identifies which part or face of a physical object
+    /// is in contact with the surface.
     pub fn component_id(&self) -> i32 {
         self.component_id
     }
 
+    /// Returns the current normalized position of this token on the surface.
+    ///
+    /// Coordinates are in the range `[0.0, 1.0]` relative to the surface dimensions.
     pub fn position(&self) -> Position {
         self.translation.position
     }
 
+    /// Returns the current 2D velocity vector of this token.
+    ///
+    /// Components are expressed as normalized units per frame.
     pub fn velocity(&self) -> Velocity {
         self.translation.velocity
     }
 
+    /// Returns the scalar speed of this token, i.e. the Euclidean magnitude
+    /// of its velocity vector.
     pub fn speed(&self) -> f32 {
         self.translation.velocity.speed()
     }
 
+    /// Returns the current orientation angle of this token in radians.
     pub fn angle(&self) -> f32 {
         self.rotation.angle
     }
 
+    /// Returns the current rotational speed of this token in radians per frame.
     pub fn rotation_speed(&self) -> f32 {
         self.rotation.speed
     }
 
+    /// Returns the current rotational acceleration of this token in radians per frame squared.
     pub fn rotation_acceleration(&self) -> f32 {
         self.rotation.acceleration
     }
 }
 
+/// The raw decoded data from a `/tuio2/tok` OSC message.
+///
+/// `TokenProfile` is an intermediate representation used during OSC decoding.
+/// Velocity, acceleration, rotation speed, and rotation acceleration are all
+/// optional because the TUIO 2.0 specification allows senders to omit them
+/// when the values are not available.
 #[derive(Debug, Clone, Copy)]
 pub struct TokenProfile {
     session_id: i32,
@@ -178,10 +211,12 @@ impl From<TokenProfile> for OscPacket {
 }
 
 impl Profile for TokenProfile {
+    /// Returns the session ID of this token profile.
     fn session_id(&self) -> i32 {
         self.session_id
     }
 
+    /// Returns the OSC address for TUIO 2.0 token messages: `"/tuio2/tok"`.
     fn address() -> String {
         "/tuio2/tok".to_string()
     }

@@ -11,7 +11,7 @@ license = "MIT"
 repository = "https://codeberg.org/qbic/tuioxide"
 
 [features]
-default = []
+default = ["websocket"]
 websocket = ["dep:tungstenite"]
 
 [dependencies]

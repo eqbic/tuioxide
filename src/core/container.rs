@@ -1,4 +1,4 @@
-use crate::core::tuio_time::TuioTime;
+use crate::core::TuioTime;
 
 /// Base container with attributes all tuio entities share.
 #[derive(Debug, Clone, Copy, PartialEq)]

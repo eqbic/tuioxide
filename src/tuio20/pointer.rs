@@ -1,16 +1,17 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    container::Container,
-    errors::TuioError,
-    math::{Position, Velocity},
-    osc_utils::ArgCursor,
-    profile::Profile,
-    rotation::Rotation,
-    translation::Translation,
-    tuio_time::TuioTime,
+    ArgCursor, Container, Position, Profile, Rotation, Translation, TuioError, TuioTime, Velocity,
 };
 
+/// A TUIO 2.0 pointer entity, corresponding to the `/tuio2/ptr` profile.
+///
+/// A pointer represents a single contact point from an input device such as a
+/// finger, stylus, or mouse. In addition to position and motion data it carries
+/// pressure, radius, and shear information that richer input devices can supply.
+///
+/// Optional fields (`pressure_speed`, `pressure_acceleration`) are `None` when
+/// the source does not include them in the OSC message.
 #[derive(Debug, Clone, Copy)]
 pub struct Pointer {
     container: Container,
@@ -63,70 +64,103 @@ impl Pointer {
         self.pressure_acceleration = pointer.pressure_acceleration;
     }
 
-    pub fn current_time(&self) -> TuioTime {
-        self.container.current_time
-    }
-
+    /// Returns the [`TuioTime`] at which this pointer was first observed.
     pub fn start_time(&self) -> TuioTime {
         self.container.start_time
     }
 
+    /// Returns the [`TuioTime`] of the most recent update for this pointer.
+    pub fn current_time(&self) -> TuioTime {
+        self.container.current_time
+    }
+
+    /// Returns the session ID that uniquely identifies this pointer within the
+    /// current TUIO session.
     pub fn session_id(&self) -> i32 {
         self.container.session_id
     }
 
+    /// Returns the combined type/user ID field.
+    ///
+    /// The upper 16 bits encode the type ID and the lower 16 bits encode the
+    /// user ID, as defined by the TUIO 2.0 specification.
     pub fn type_user_id(&self) -> i32 {
         self.type_user_id
     }
 
+    /// Returns the component ID of this pointer.
+    ///
+    /// The component ID distinguishes individual contact points belonging to the
+    /// same type/user combination (e.g. different fingers of the same hand).
     pub fn component_id(&self) -> i32 {
         self.component_id
     }
 
+    /// Returns the current normalized position of this pointer in the range
+    /// `[0.0, 1.0]` for both axes.
     pub fn position(&self) -> Position {
         self.translation.position
     }
 
+    /// Returns the current 2D velocity vector of this pointer.
     pub fn velocity(&self) -> Velocity {
         self.translation.velocity
     }
 
+    /// Returns the scalar speed of this pointer (the Euclidean magnitude of its
+    /// velocity vector).
     pub fn speed(&self) -> f32 {
         self.translation.velocity.speed()
     }
 
+    /// Returns the current translational acceleration of this pointer.
     pub fn acceleration(&self) -> f32 {
         self.translation.acceleration
     }
 
+    /// Returns the current orientation angle of this pointer, in radians.
     pub fn angle(&self) -> f32 {
         self.rotation.angle
     }
 
+    /// Returns the rotational speed of this pointer, in radians per frame.
     pub fn rotation_speed(&self) -> f32 {
         self.rotation.speed
     }
 
+    /// Returns the rotational acceleration of this pointer, in radians per frame².
     pub fn rotation_acceleration(&self) -> f32 {
         self.rotation.acceleration
     }
 
+    /// Returns the shear value of this pointer.
+    ///
+    /// Shear represents the lateral tilt of a stylus or similar device, as
+    /// defined by the TUIO 2.0 specification.
     pub fn shear(&self) -> f32 {
         self.shear
     }
 
+    /// Returns the contact pressure of this pointer, normalized to `[0.0, 1.0]`.
     pub fn pressure(&self) -> f32 {
         self.pressure
     }
 
+    /// Returns the contact radius of this pointer in normalized surface units.
     pub fn radius(&self) -> f32 {
         self.radius
     }
 
+    /// Returns the rate of change of contact pressure, if provided by the source.
+    ///
+    /// Returns `None` when the TUIO source does not transmit this optional field.
     pub fn pressure_speed(&self) -> Option<f32> {
         self.pressure_speed
     }
 
+    /// Returns the acceleration of contact pressure, if provided by the source.
+    ///
+    /// Returns `None` when the TUIO source does not transmit this optional field.
     pub fn pressure_acceleration(&self) -> Option<f32> {
         self.pressure_acceleration
     }

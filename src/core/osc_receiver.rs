@@ -16,7 +16,7 @@ use rosc::{OscPacket, decoder::MTU};
 /// - [`websocket::WebsocketOscReceiver`] — available with the `websocket` feature,
 ///   receives OSC over a WebSocket connection.
 ///
-/// You can supply your own implementation to the generic client structs [`Client`](crate::client::tuio11::client::Client)(Tuio 1.1) and [`Client`](crate::client::tuio20::client::Client)(Tuio 2.0)
+/// You can supply your own implementation to the generic client structs [`Client`](crate::tuio11::Client)(Tuio 1.1) and [`Client`](crate::tuio20::Client)(Tuio 2.0)
 /// in order to use a custom transport.
 pub trait OscReceiver: Default {
     /// Creates a new receiver that listens on the given `remote` address and `port`.
@@ -116,9 +116,9 @@ pub mod websocket {
         thread::sleep,
         time::Duration,
     };
-    use tungstenite::{ClientRequestBuilder, Message, WebSocket, connect, stream::MaybeTlsStream};
+    use tungstenite::{Message, WebSocket, connect, stream::MaybeTlsStream};
 
-    use crate::client::osc_receiver::OscReceiver;
+    use crate::core::osc_receiver::OscReceiver;
 
     /// An [`OscReceiver`] that reads OSC packets from a WebSocket connection.
     ///

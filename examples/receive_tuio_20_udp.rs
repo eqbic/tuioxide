@@ -1,8 +1,8 @@
 use std::io;
 
-use tuioxide::{
-    client::tuio20::client::Client,
-    core::tuio20::events::{PointerEvent, TokenEvent},
+use tuioxide::tuio20::{
+    Client,
+    events::{PointerEvent, TokenEvent},
 };
 
 fn main() -> Result<(), io::Error> {

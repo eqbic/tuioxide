@@ -1,8 +1,11 @@
 use std::io;
 
 use tuioxide::{
-    client::{WebsocketOscReceiver, tuio20::client::Client},
-    core::tuio20::events::{PointerEvent, TokenEvent},
+    core::WebsocketOscReceiver,
+    tuio20::{
+        Client,
+        events::{PointerEvent, TokenEvent},
+    },
 };
 
 fn main() -> Result<(), io::Error> {

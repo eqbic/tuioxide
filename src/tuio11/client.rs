@@ -1,8 +1,8 @@
 use std::io;
 
-use crate::client::{
-    osc_receiver::{OscReceiver, UdpOscReceiver},
-    tuio11::processor::{Processor, TuioEvents},
+use crate::{
+    core::osc_receiver::{OscReceiver, UdpOscReceiver},
+    tuio11::{event::TuioEvents, processor::Processor},
 };
 
 /// A high-level TUIO 1.1 client that receives OSC packets and processes them
@@ -16,8 +16,8 @@ use crate::client::{
 ///
 /// ```no_run
 /// use std::net::Ipv4Addr;
-/// use tuioxide::client::osc_receiver::{OscReceiver, UdpOscReceiver};
-/// use tuioxide::client::tuio11::client::Client;
+/// use tuioxide::core::osc_receiver::{OscReceiver, UdpOscReceiver};
+/// use tuioxide::tuio11::Client;
 ///
 /// let receiver = UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
 /// let mut client = Client::new(receiver);

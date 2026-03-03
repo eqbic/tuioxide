@@ -1,7 +1,17 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
-use crate::core::{errors::TuioError, osc_utils::ArgCursor, profile::Profile, tuio_time::TuioTime};
+use crate::core::{ArgCursor, Profile, TuioError, TuioTime};
 
+/// A TUIO 2.0 symbol entity, representing a tagged object with a textual group
+/// and data payload, tracked on a touch surface.
+///
+/// Symbols are identified by a session ID and carry a `group` string (describing
+/// the symbol type or namespace) and a `data` string (the actual symbol content,
+/// e.g. a barcode value or label). Unlike geometric entities such as [`super::Token`]
+/// or [`super::Pointer`], symbols have no spatial position — they carry
+/// only identity and textual payload.
+///
+/// Symbols are delivered via the `/tuio2/sym` OSC address.
 #[derive(Debug, Clone)]
 pub struct Symbol {
     start_time: TuioTime,
@@ -34,30 +44,50 @@ impl Symbol {
         self.data = symbol.data.to_owned();
     }
 
+    /// Returns the [`TuioTime`] at which this symbol first appeared in the session.
     pub fn start_time(&self) -> TuioTime {
         self.start_time
     }
 
+    /// Returns the [`TuioTime`] of the most recent update to this symbol.
     pub fn current_time(&self) -> TuioTime {
         self.current_time
     }
 
+    /// Returns the session ID uniquely identifying this symbol within the current session.
     pub fn session_id(&self) -> i32 {
         self.session_id
     }
 
+    /// Returns the combined type and user ID associated with this symbol.
+    ///
+    /// In TUIO 2.0 this field encodes both the type class and the user in a
+    /// single integer, following the TUIO 2.0 specification.
     pub fn type_user_id(&self) -> i32 {
         self.type_user_id
     }
 
+    /// Returns the component ID of this symbol.
+    ///
+    /// The component ID distinguishes multiple simultaneous symbols belonging to
+    /// the same type/user combination.
     pub fn component_id(&self) -> i32 {
         self.component_id
     }
 
+    /// Returns the group (namespace or type label) of this symbol.
+    ///
+    /// For example, this might be `"TUIO"`, `"QRCode"`, or any application-defined
+    /// string that categorises the symbol's data format.
     pub fn group(&self) -> &str {
         &self.group
     }
 
+    /// Returns the data payload carried by this symbol.
+    ///
+    /// The meaning of this string depends on the `group`. For example, for a
+    /// barcode group it might be the raw barcode text; for a custom group it
+    /// could be any application-defined value.
     pub fn data(&self) -> &str {
         &self.data
     }
