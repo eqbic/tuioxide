@@ -146,8 +146,6 @@ pub mod websocket {
     #[derive(Debug)]
     pub struct WebsocketOscReceiver {
         socket: WebSocket<MaybeTlsStream<TcpStream>>,
-        remote: Ipv4Addr,
-        port: u16,
     }
 
     impl WebsocketOscReceiver {
@@ -175,11 +173,7 @@ pub mod websocket {
         /// a new [`WebsocketOscReceiver`].
         fn new(remote: Ipv4Addr, port: u16) -> Self {
             let socket = WebsocketOscReceiver::connect_with_retry(remote, port);
-            Self {
-                socket,
-                remote,
-                port,
-            }
+            Self { socket }
         }
 
         /// Blocks until the next WebSocket message arrives, decodes it as an OSC
