@@ -10,6 +10,14 @@ use crate::core::{
     tuio_time::TuioTime,
 };
 
+/// A TUIO 1.1 cursor, representing a single touch point on a surface.
+///
+/// A `Cursor` tracks the position, velocity, and acceleration of a finger or
+/// pointer contact. It corresponds to the `/tuio/2Dcur` OSC address and is
+/// the most common entity type in TUIO 1.1 sessions.
+///
+/// Cursors are created and updated by the TUIO 1.1 [`Processor`](crate::client::tuio11::processor::Processor)
+/// and surfaced to the application via [`CursorEvent`](crate::core::tuio11::event::CursorEvent).
 #[derive(Debug, Clone, Copy)]
 pub struct Cursor {
     container: Container,
@@ -32,26 +40,40 @@ impl Cursor {
             .update(cursor.position, cursor.velocity, cursor.acceleration);
     }
 
+    /// Returns the [`TuioTime`] at which this cursor was last updated.
     pub fn current_time(&self) -> TuioTime {
         self.container.current_time
     }
 
+    /// Returns the [`TuioTime`] at which this cursor first appeared.
     pub fn start_time(&self) -> TuioTime {
         self.container.start_time
     }
 
+    /// Returns the session ID uniquely identifying this cursor within the current session.
     pub fn session_id(&self) -> i32 {
         self.container.session_id
     }
 
+    /// Returns the current normalized position of this cursor on the surface.
+    ///
+    /// Coordinates are in the range `[0.0, 1.0]`, where `(0, 0)` is the top-left
+    /// corner and `(1, 1)` is the bottom-right corner.
     pub fn position(&self) -> Position {
         self.translation.position
     }
 
+    /// Returns the current 2D velocity vector of this cursor.
+    ///
+    /// Components are expressed as normalized units per frame.
     pub fn velocity(&self) -> Velocity {
         self.translation.velocity
     }
 
+    /// Returns the scalar motion acceleration of this cursor.
+    ///
+    /// Positive values indicate the cursor is speeding up; negative values
+    /// indicate it is slowing down.
     pub fn acceleration(&self) -> f32 {
         self.translation.acceleration
     }

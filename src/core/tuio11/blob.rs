@@ -11,6 +11,15 @@ use crate::core::{
     tuio_time::TuioTime,
 };
 
+/// A TUIO 1.1 blob entity, corresponding to the `/tuio/2Dblb` profile.
+///
+/// A blob represents an amorphous contact region on a 2D surface. In addition to
+/// the position, velocity and acceleration properties shared with cursors and
+/// objects, a blob also carries orientation (`angle`), bounding `size`, rotational
+/// motion, and a scalar `area` that describes how much surface it covers.
+///
+/// Blobs are produced by the TUIO 1.1 client processor and delivered via
+/// [`BlobEvent`](crate::core::tuio11::event::BlobEvent).
 #[derive(Debug, Clone, Copy)]
 pub struct Blob {
     container: Container,
@@ -44,46 +53,70 @@ impl Blob {
         self.area = blob.area;
     }
 
+    /// Returns the [`TuioTime`] at which this blob was last updated.
     pub fn current_time(&self) -> TuioTime {
         self.container.current_time
     }
 
+    /// Returns the [`TuioTime`] at which this blob first appeared.
     pub fn start_time(&self) -> TuioTime {
         self.container.start_time
     }
 
+    /// Returns the unique session ID assigned to this blob by the TUIO source.
     pub fn session_id(&self) -> i32 {
         self.container.session_id
     }
 
+    /// Returns the current normalized position of this blob on the surface.
+    ///
+    /// Coordinates are in the range `[0.0, 1.0]` for both axes.
     pub fn position(&self) -> Position {
         self.translation.position
     }
 
+    /// Returns the current 2D velocity vector of this blob.
+    ///
+    /// Each component represents the rate of change of the corresponding
+    /// position component per frame.
     pub fn velocity(&self) -> Velocity {
         self.translation.velocity
     }
 
+    /// Returns the scalar translational acceleration of this blob.
+    ///
+    /// Positive values indicate speeding up; negative values indicate slowing down.
     pub fn acceleration(&self) -> f32 {
         self.translation.acceleration
     }
 
+    /// Returns the current orientation angle of this blob, in radians.
     pub fn angle(&self) -> f32 {
         self.rotation.angle
     }
 
+    /// Returns the current rotational speed of this blob, in radians per frame.
     pub fn rotation_speed(&self) -> f32 {
         self.rotation.speed
     }
 
+    /// Returns the rotational acceleration of this blob, in radians per frame squared.
+    ///
+    /// Positive values indicate increasing rotational speed; negative values indicate
+    /// decreasing rotational speed.
     pub fn rotation_acceleration(&self) -> f32 {
         self.rotation.acceleration
     }
 
+    /// Returns the bounding size of this blob in normalized surface coordinates.
+    ///
+    /// The [`Size`] contains `width` and `height` components, both in the range
+    /// `[0.0, 1.0]`.
     pub fn size(&self) -> Size {
         self.size
     }
 
+    /// Returns the surface area covered by this blob, in normalized units.
     pub fn area(&self) -> f32 {
         self.area
     }

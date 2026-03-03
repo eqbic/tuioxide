@@ -20,11 +20,36 @@ use crate::core::{
     utils::retain_alive,
 };
 
+/// A collection of TUIO 2.0 events produced from a single OSC bundle frame.
+///
+/// Each field holds the events generated for its respective entity type during
+/// the processing of one frame. An event is emitted for every entity that was
+/// added, updated, or removed since the previous frame.
 #[derive(Debug, Default)]
 pub struct TuioEvents {
+    /// Events for [`Pointer`] entities (`/tuio2/ptr`).
+    ///
+    /// Each element is a [`PointerEvent::Add`], [`PointerEvent::Update`], or
+    /// [`PointerEvent::Remove`] variant depending on whether the pointer appeared,
+    /// moved, or disappeared in this frame.
     pub pointer_events: Vec<PointerEvent>,
+
+    /// Events for [`Token`] entities (`/tuio2/tok`).
+    ///
+    /// Each element is a [`TokenEvent::Add`], [`TokenEvent::Update`], or
+    /// [`TokenEvent::Remove`] variant.
     pub token_events: Vec<TokenEvent>,
+
+    /// Events for [`Bounds`] entities (`/tuio2/bnd`).
+    ///
+    /// Each element is a [`BoundsEvent::Add`], [`BoundsEvent::Update`], or
+    /// [`BoundsEvent::Remove`] variant.
     pub bounds_events: Vec<BoundsEvent>,
+
+    /// Events for [`Symbol`] entities (`/tuio2/sym`).
+    ///
+    /// Each element is a [`SymbolEvent::Add`], [`SymbolEvent::Update`], or
+    /// [`SymbolEvent::Remove`] variant.
     pub symbol_events: Vec<SymbolEvent>,
 }
 

@@ -11,6 +11,16 @@ use crate::core::{
     tuio_time::TuioTime,
 };
 
+/// A TUIO 1.1 tangible object tracked on a surface (`/tuio/2Dobj`).
+///
+/// An `Object` represents a physical tangible that can be
+/// placed and moved on a TUIO-enabled surface. Each object carries a
+/// [`class_id`](Object::class_id) that identifies the fiducial marker pattern,
+/// as well as full 2D position, velocity, acceleration, angle, rotation speed,
+/// and rotation acceleration data.
+///
+/// Instances are created and updated internally by the TUIO 1.1 processor and
+/// surfaced to the application via [`ObjectEvent`](crate::core::tuio11::event::ObjectEvent).
 #[derive(Debug, Clone, Copy)]
 pub struct Object {
     container: Container,
@@ -48,42 +58,64 @@ impl Object {
         );
     }
 
+    /// Returns the timestamp of the most recent update for this object.
     pub fn current_time(&self) -> TuioTime {
         self.container.current_time
     }
 
+    /// Returns the timestamp at which this object first appeared on the surface.
     pub fn start_time(&self) -> TuioTime {
         self.container.start_time
     }
 
+    /// Returns the session ID assigned to this object by the TUIO source.
+    ///
+    /// Session IDs uniquely identify active entities within a session and are
+    /// reassigned when an entity disappears and reappears.
     pub fn session_id(&self) -> i32 {
         self.container.session_id
     }
 
+    /// Returns the class ID (fiducial marker ID) of this object.
+    ///
+    /// The class ID identifies the physical marker pattern placed on the surface
+    /// and remains stable across multiple sessions for the same physical object.
     pub fn class_id(&self) -> i32 {
         self.class_id
     }
 
+    /// Returns the current normalized 2D position of this object on the surface.
+    ///
+    /// Coordinates are in the range `[0.0, 1.0]` relative to the surface dimensions.
     pub fn position(&self) -> Position {
         self.translation.position
     }
 
+    /// Returns the current 2D velocity vector of this object.
+    ///
+    /// Components represent the rate of change of the normalized position per frame.
     pub fn velocity(&self) -> Velocity {
         self.translation.velocity
     }
 
+    /// Returns the current translational acceleration scalar of this object.
+    ///
+    /// Positive values indicate speeding up; negative values indicate slowing down.
     pub fn acceleration(&self) -> f32 {
         self.translation.acceleration
     }
 
+    /// Returns the current rotation angle of this object in radians.
     pub fn angle(&self) -> f32 {
         self.rotation.angle
     }
 
+    /// Returns the current rotational speed of this object in radians per frame.
     pub fn rotation_speed(&self) -> f32 {
         self.rotation.speed
     }
 
+    /// Returns the current rotational acceleration of this object in radians per frame².
     pub fn rotation_acceleration(&self) -> f32 {
         self.rotation.acceleration
     }
