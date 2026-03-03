@@ -73,7 +73,7 @@ fn main() {
 ```rust
 use tuioxide::{
     tuio20::Client,
-    tuio20::events::{PointerEvent, TokenEvent},
+    tuio20::{PointerEvent, TokenEvent},
 };
 
 fn main() {

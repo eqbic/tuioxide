@@ -2,7 +2,7 @@ use std::io;
 
 use crate::{
     core::osc_receiver::{OscReceiver, UdpOscReceiver},
-    tuio20::{events::TuioEvents, processor::Processor},
+    tuio20::{TuioEvents, processor::Processor},
 };
 
 /// A high-level TUIO 2.0 client that receives OSC bundles and processes them

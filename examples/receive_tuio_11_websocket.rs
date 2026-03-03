@@ -2,7 +2,7 @@ use std::io;
 
 use tuioxide::{
     core::WebsocketOscReceiver,
-    tuio11::{Client, event::CursorEvent},
+    tuio11::{Client, CursorEvent},
 };
 
 fn main() -> Result<(), io::Error> {

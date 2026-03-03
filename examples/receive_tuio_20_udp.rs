@@ -1,9 +1,6 @@
 use std::io;
 
-use tuioxide::tuio20::{
-    Client,
-    events::{PointerEvent, TokenEvent},
-};
+use tuioxide::tuio20::{Client, PointerEvent, TokenEvent};
 
 fn main() -> Result<(), io::Error> {
     let mut client = Client::default();

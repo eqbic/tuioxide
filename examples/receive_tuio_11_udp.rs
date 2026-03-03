@@ -1,6 +1,6 @@
 use std::io;
 
-use tuioxide::tuio11::{Client, event::CursorEvent};
+use tuioxide::tuio11::{Client, CursorEvent};
 
 fn main() -> Result<(), io::Error> {
     let mut client = Client::default();

@@ -10,8 +10,8 @@ use crate::{
     tuio20::{
         Bounds, Pointer, Symbol, Token,
         bundle::TuioBundle,
-        events::{BoundsEvent, PointerEvent, SymbolEvent, TokenEvent, TuioEvents},
         osc_decoder::OscDecoder,
+        {BoundsEvent, PointerEvent, SymbolEvent, TokenEvent, TuioEvents},
     },
 };
 

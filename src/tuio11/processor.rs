@@ -9,9 +9,8 @@ use rosc::OscPacket;
 use crate::{
     core::{Profile, TuioTime, retain_alive},
     tuio11::{
-        Blob, Cursor, Object,
+        Blob, BlobEvent, Cursor, CursorEvent, Object, ObjectEvent, TuioEvents,
         bundle::{EntityType, TuioBundle, TuioBundleType},
-        event::{BlobEvent, CursorEvent, ObjectEvent, TuioEvents},
         osc_decoder_encoder::OscDecoder,
     },
 };
