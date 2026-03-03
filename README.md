@@ -1,7 +1,5 @@
 # tuioxide
 
-> ⚠️ **This crate is currently a work in progress and is not yet fully functional.**
-
 A Rust implementation of the [TUIO](https://tuio.org) protocol by Martin Kaltenbrunner, supporting both [TUIO 1.1](https://tuio.org/?specification) and [TUIO 2.0](https://www.tuio.org/?tuio20). Built on top of [rosc](https://crates.io/crates/rosc) for OSC packet encoding and decoding.
 
 TUIO is an open framework that defines a common protocol and API for tangible multitouch surfaces. It allows applications to receive touch, tangible object, and gesture data from interactive surfaces and trackers.
