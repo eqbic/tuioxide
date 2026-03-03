@@ -25,14 +25,14 @@ Add tuioxide to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tuioxide = { version = "0.2.0" }
+tuioxide = { version = "0.2" }
 ```
 
 To enable WebSocket support, enable the `websocket` feature:
 
 ```toml
 [dependencies]
-tuioxide = { version = "0.2.0", features = ["websocket"] }
+tuioxide = { version = "0.2", features = ["websocket"] }
 ```
 
 ## Usage
