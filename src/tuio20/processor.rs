@@ -8,16 +8,16 @@ use rosc::OscPacket;
 use crate::{
     core::{Profile, TuioTime, retain_alive},
     tuio20::{
-        Bounds, Pointer, Symbol, Token,
-        bundle::TuioBundle,
+        Bounds, BoundsEvent, Pointer, PointerEvent, Symbol, SymbolEvent, Token, TokenEvent,
+        TuioEvents,
+        bundle::{Frame, TuioBundle},
         osc_decoder::OscDecoder,
-        {BoundsEvent, PointerEvent, SymbolEvent, TokenEvent, TuioEvents},
     },
 };
 
 #[derive(Debug, Clone)]
 pub(crate) struct Processor {
-    current_frame: Cell<i32>,
+    current_frame: RefCell<Frame>,
     current_time: Cell<TuioTime>,
     pointers: RefCell<HashMap<i32, Pointer>>,
     tokens: RefCell<HashMap<i32, Token>>,
@@ -28,7 +28,7 @@ pub(crate) struct Processor {
 impl Processor {
     pub(crate) fn new() -> Self {
         Self {
-            current_frame: (-1).into(),
+            current_frame: RefCell::new(Frame::default()),
             current_time: Cell::new(TuioTime::from_system_time().unwrap()),
             pointers: RefCell::new(HashMap::new()),
             tokens: RefCell::new(HashMap::new()),
@@ -41,14 +41,16 @@ impl Processor {
         self.process_packet(packet)
     }
 
-    fn update_frame(&self, frame: i32) -> bool {
-        if frame > 0 {
-            if frame > self.current_frame.get() {
+    fn update_frame(&self, frame: &Frame) -> bool {
+        if frame.frame_id() > 0 {
+            if frame.frame_id() > self.current_frame.borrow().frame_id() {
                 self.current_time.set(TuioTime::from_system_time().unwrap());
             }
 
-            if frame >= self.current_frame.get() || self.current_frame.get() - frame > 100 {
-                self.current_frame.set(frame);
+            if frame.frame_id() >= self.current_frame.borrow().frame_id()
+                || self.current_frame.borrow().frame_id() - frame.frame_id() > 100
+            {
+                self.current_frame.replace(frame.to_owned());
                 return true;
             }
         }
@@ -61,7 +63,7 @@ impl Processor {
             let tuio_bundle = OscDecoder::decode_bundle(bundle).unwrap();
             let alive = tuio_bundle.alive();
             let current_time = self.current_time.get();
-            if self.update_frame(tuio_bundle.frame().frame_id()) {
+            if self.update_frame(tuio_bundle.frame()) {
                 let events = TuioEvents {
                     pointer_events: process_pointers(
                         &mut self.pointers.borrow_mut(),
@@ -87,6 +89,7 @@ impl Processor {
                         &tuio_bundle,
                         &current_time,
                     ),
+                    frame_event: self.current_frame.borrow().to_owned(),
                 };
 
                 return Some(events);

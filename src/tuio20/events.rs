@@ -1,4 +1,4 @@
-use crate::tuio20::{Bounds, Pointer, Symbol, Token};
+use crate::tuio20::{Bounds, Pointer, Symbol, Token, bundle::Frame};
 
 /// A collection of TUIO 2.0 events produced from a single OSC bundle frame.
 ///
@@ -31,6 +31,10 @@ pub struct TuioEvents {
     /// Each element is a [`SymbolEvent::Add`], [`SymbolEvent::Update`], or
     /// [`SymbolEvent::Remove`] variant.
     pub symbol_events: Vec<SymbolEvent>,
+
+    /// Event for the [`Frame`] itself, including the frame's timestamp and any
+    /// other frame-level metadata.
+    pub frame_event: Frame,
 }
 
 /// An event describing a change in the lifecycle of a TUIO 2.0 [`Pointer`].

@@ -10,6 +10,9 @@ fn main() -> Result<(), io::Error> {
 
     loop {
         let events = client.update()?;
+
+        println!("Frame: {:?}", events.frame_event);
+
         for event in events.pointer_events {
             match event {
                 PointerEvent::Add(pointer) => println!(

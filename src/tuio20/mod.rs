@@ -9,6 +9,7 @@ mod symbol;
 mod token;
 
 pub use bounds::Bounds;
+pub use bundle::Frame;
 pub use client::Client;
 pub use events::*;
 pub use pointer::Pointer;

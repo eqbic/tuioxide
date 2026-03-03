@@ -17,8 +17,14 @@ struct Entities {
     symbols: Vec<SymbolProfile>,
 }
 
-#[derive(Debug, Clone, Default)]
-pub(crate) struct Frame {
+/// Represents a single TUIO **FRM** (/tuio2/frm) message.
+///
+/// A frame is the unique identifier for an individual TUIO bundle and must
+/// appear at the beginning of each bundle. It provides timing, ordering,
+/// sensor dimension, and source information for all messages that belong to
+/// the same frame.
+#[derive(Debug, Clone)]
+pub struct Frame {
     frame_id: i32,
     time: TuioTime,
     dimension_x: u16,
@@ -26,19 +32,45 @@ pub(crate) struct Frame {
     source: String,
 }
 
+impl Default for Frame {
+    fn default() -> Self {
+        Self {
+            frame_id: -1,
+            time: TuioTime::default(),
+            dimension_x: 0,
+            dimension_y: 0,
+            source: String::new(),
+        }
+    }
+}
+
 impl Frame {
+    /// Returns the frame ID.
+    /// This value enables clients to discard late or out-of-order messages by comparing frame IDs.
+    /// The value `0` is reserved as a default identifier for out-of-order execution.
     pub fn frame_id(&self) -> i32 {
         self.frame_id
     }
 
+    /// Return the frame timestamp represented as an OSC 64-bit time tag [`TuioTime`].
     pub fn time(&self) -> &TuioTime {
         &self.time
     }
 
+    /// Return the sensor dimensions as a tuple of `(width, height)` in pixels.
     pub fn dimensions(&self) -> (u16, u16) {
         (self.dimension_x, self.dimension_y)
     }
 
+    /// Returns a string uniquely identifying the origin of the TUIO message bundle.
+    ///   The format follows the convention:
+    ///
+    ///   `src_name:src_instance@src_origin`
+    ///
+    ///   Where:
+    ///   - `src_name` is a short identifier of the TUIO server application,
+    ///   - `src_instance` differentiates multiple instances,
+    ///   - `src_origin` encodes the machine address in hexadecimal form.
     pub fn source(&self) -> &str {
         &self.source
     }
