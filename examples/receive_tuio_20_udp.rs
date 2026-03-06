@@ -6,7 +6,12 @@ fn main() -> Result<(), io::Error> {
     let mut client = Client::default();
 
     loop {
-        let events = client.update()?;
+        let events = match client.update() {
+            Ok(events) => events,
+            Err(_) => {
+                continue;
+            }
+        };
 
         println!("Frame: {:?}", events.frame_event);
         for event in events.pointer_events {
