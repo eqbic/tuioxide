@@ -10,7 +10,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Default)]
-struct Entities {
+struct Components {
     pointers: Vec<PointerProfile>,
     tokens: Vec<TokenProfile>,
     bounds: Vec<BoundsProfile>,
@@ -101,7 +101,7 @@ impl<'a> TryFrom<&'a OscMessage> for Frame {
 #[derive(Debug, Clone, Default)]
 pub(crate) struct TuioBundle {
     frame: Frame,
-    entities: Entities,
+    components: Components,
     alive: HashSet<i32>,
 }
 
@@ -115,19 +115,19 @@ impl TuioBundle {
     }
 
     pub(crate) fn pointers(&self) -> &Vec<PointerProfile> {
-        &self.entities.pointers
+        &self.components.pointers
     }
 
     pub(crate) fn tokens(&self) -> &Vec<TokenProfile> {
-        &self.entities.tokens
+        &self.components.tokens
     }
 
     pub(crate) fn bounds(&self) -> &Vec<BoundsProfile> {
-        &self.entities.bounds
+        &self.components.bounds
     }
 
     pub(crate) fn symbols(&self) -> &Vec<SymbolProfile> {
-        &self.entities.symbols
+        &self.components.symbols
     }
 
     pub(crate) fn frame(&self) -> &Frame {
@@ -144,21 +144,21 @@ impl TuioBundle {
 
     pub(crate) fn add_pointer(&mut self, message: &OscMessage) {
         let pointer = PointerProfile::try_from(message).unwrap();
-        self.entities.pointers.push(pointer);
+        self.components.pointers.push(pointer);
     }
 
     pub(crate) fn add_token(&mut self, message: &OscMessage) {
         let token = TokenProfile::try_from(message).unwrap();
-        self.entities.tokens.push(token);
+        self.components.tokens.push(token);
     }
 
     pub(crate) fn add_bounds(&mut self, message: &OscMessage) {
         let bound = BoundsProfile::try_from(message).unwrap();
-        self.entities.bounds.push(bound);
+        self.components.bounds.push(bound);
     }
 
     pub(crate) fn add_symbol(&mut self, message: &OscMessage) {
         let symbol = SymbolProfile::try_from(message).unwrap();
-        self.entities.symbols.push(symbol);
+        self.components.symbols.push(symbol);
     }
 }
