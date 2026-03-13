@@ -18,7 +18,7 @@ use rosc::{OscPacket, decoder::MTU};
 ///
 /// You can box any implementation and pass it to [`tuio11::Client`](crate::tuio11::Client)
 /// or [`tuio20::Client`](crate::tuio20::Client) to use a custom transport.
-pub trait OscReceiver {
+pub trait OscReceiver: Send {
     /// Blocks until the next OSC packet is received and returns it.
     ///
     /// # Errors
