@@ -58,7 +58,7 @@ impl UdpOscReceiver {
     /// # Panics
     ///
     /// Panics if the socket cannot be bound to the given address and port.
-    fn new(remote: Ipv4Addr, port: u16) -> Self {
+    pub fn new(remote: Ipv4Addr, port: u16) -> Self {
         let socket = match UdpSocket::bind(SocketAddrV4::new(remote, port)) {
             Ok(socket) => {
                 info!("Created UDP socket for {remote}:{port}");
@@ -145,7 +145,7 @@ pub mod websocket {
     impl WebsocketOscReceiver {
         /// Connects to `ws://remote:port` (retrying until successful) and returns
         /// a new [`WebsocketOscReceiver`].
-        fn new(remote: Ipv4Addr, port: u16) -> Self {
+        pub fn new(remote: Ipv4Addr, port: u16) -> Self {
             let socket = WebsocketOscReceiver::connect_with_retry(remote, port);
             Self { socket }
         }
