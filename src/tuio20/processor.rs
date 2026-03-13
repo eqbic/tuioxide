@@ -6,7 +6,7 @@ use std::{
 use rosc::OscPacket;
 
 use crate::{
-    core::{Profile, TuioTime, retain_alive},
+    core::{Profile, TuioTime, processor::TuioProcessor, retain_alive},
     tuio20::{
         Bounds, BoundsEvent, Pointer, PointerEvent, Symbol, SymbolEvent, Token, TokenEvent,
         TuioEvents,
@@ -16,13 +16,21 @@ use crate::{
 };
 
 #[derive(Debug, Clone)]
-pub(crate) struct Processor {
+pub struct Processor {
     current_frame: RefCell<Frame>,
     current_time: Cell<TuioTime>,
     pointers: RefCell<HashMap<i32, Pointer>>,
     tokens: RefCell<HashMap<i32, Token>>,
     bounds: RefCell<HashMap<i32, Bounds>>,
     symbols: RefCell<HashMap<i32, Symbol>>,
+}
+
+impl TuioProcessor for Processor {
+    type Events = TuioEvents;
+
+    fn update(&mut self, packet: OscPacket) -> Option<Self::Events> {
+        self.process_packet(packet)
+    }
 }
 
 impl Processor {
@@ -35,10 +43,6 @@ impl Processor {
             bounds: RefCell::new(HashMap::new()),
             symbols: RefCell::new(HashMap::new()),
         }
-    }
-
-    pub(crate) fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
-        self.process_packet(packet)
     }
 
     fn update_frame(&self, frame: &Frame) -> bool {

@@ -7,7 +7,7 @@ use log::{debug, warn};
 use rosc::OscPacket;
 
 use crate::{
-    core::{Profile, TuioTime, retain_alive},
+    core::{Profile, TuioTime, processor::TuioProcessor, retain_alive},
     tuio11::{
         Blob, BlobEvent, Cursor, CursorEvent, Object, ObjectEvent, TuioEvents,
         bundle::{EntityType, TuioBundle, TuioBundleType},
@@ -16,7 +16,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone)]
-pub(crate) struct Processor {
+pub struct Processor {
     current_frame: Cell<i32>,
     current_time: Cell<TuioTime>,
     cursors: RefCell<HashMap<i32, Cursor>>,
@@ -30,6 +30,14 @@ impl Default for Processor {
     }
 }
 
+impl TuioProcessor for Processor {
+    type Events = TuioEvents;
+
+    fn update(&mut self, packet: OscPacket) -> Option<Self::Events> {
+        self.process_packet(packet)
+    }
+}
+
 impl Processor {
     pub(crate) fn new() -> Self {
         Self {
@@ -39,10 +47,6 @@ impl Processor {
             objects: RefCell::new(HashMap::new()),
             blobs: RefCell::new(HashMap::new()),
         }
-    }
-
-    pub(crate) fn update(&self, packet: OscPacket) -> Option<TuioEvents> {
-        self.process_packet(packet)
     }
 
     fn update_frame(&self, frame: i32) -> bool {

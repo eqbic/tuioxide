@@ -1,9 +1,11 @@
+pub mod client;
 pub mod constants;
 mod container;
 mod errors;
 mod math;
 pub mod osc_receiver;
 mod osc_utils;
+pub(crate) mod processor;
 mod profile;
 mod rotation;
 mod translation;
@@ -13,6 +15,7 @@ mod utils;
 #[cfg(feature = "websocket")]
 pub use osc_receiver::websocket::WebsocketOscReceiver;
 
+pub use client::Client;
 pub(crate) use container::Container;
 pub use errors::TuioError;
 pub use math::*;
