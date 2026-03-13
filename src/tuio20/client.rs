@@ -8,15 +8,15 @@ use crate::{
 /// A high-level TUIO 2.0 client that receives OSC bundles and processes them
 /// into typed TUIO events.
 ///
-/// `Client` is generic over any [`OscReceiver`] transport (e.g. UDP or WebSocket),
-/// allowing it to be used with different network backends. The default configuration
-/// uses [`UdpOscReceiver`] bound to `127.0.0.1:3333`.
+/// `Client` accepts any [`OscReceiver`] implementation, allowing it to be used
+/// with different network backends. The default configuration uses
+/// [`UdpOscReceiver`] bound to `127.0.0.1:3333`.
 ///
 /// # Example
 ///
 /// ```no_run
 /// use std::net::Ipv4Addr;
-/// use tuioxide::core::osc_receiver::{OscReceiver, UdpOscReceiver};
+/// use tuioxide::core::osc_receiver::UdpOscReceiver;
 /// use tuioxide::tuio20::Client;
 ///
 /// let receiver = UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
@@ -30,22 +30,19 @@ use crate::{
 ///     }
 /// }
 /// ```
-pub struct Client<T: OscReceiver> {
-    receiver: T,
+pub struct Client {
+    receiver: Box<dyn OscReceiver>,
     processor: Processor,
 }
 
-impl<T> Client<T>
-where
-    T: OscReceiver,
-{
+impl Client {
     /// Creates a new `Client` using the given `receiver` as its OSC transport.
     ///
     /// The internal [`Processor`] is initialised in its default state with no
     /// tracked entities and a frame counter starting at `-1`.
-    pub fn new(receiver: T) -> Self {
+    pub fn new(receiver: impl OscReceiver + 'static) -> Self {
         Self {
-            receiver,
+            receiver: Box::new(receiver),
             processor: Processor::default(),
         }
     }
@@ -70,7 +67,7 @@ where
     }
 }
 
-impl Default for Client<UdpOscReceiver> {
+impl Default for Client {
     /// Creates a default `Client` backed by a [`UdpOscReceiver`] bound to
     /// `127.0.0.1:3333`.
     fn default() -> Self {

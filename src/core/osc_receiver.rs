@@ -16,17 +16,9 @@ use rosc::{OscPacket, decoder::MTU};
 /// - [`websocket::WebsocketOscReceiver`] — available with the `websocket` feature,
 ///   receives OSC over a WebSocket connection.
 ///
-/// You can supply your own implementation to the generic client structs [`Client`](crate::tuio11::Client)(Tuio 1.1) and [`Client`](crate::tuio20::Client)(Tuio 2.0)
-/// in order to use a custom transport.
-pub trait OscReceiver: Default {
-    /// Creates a new receiver that listens on the given `remote` address and `port`.
-    ///
-    /// # Panics
-    ///
-    /// Implementations are permitted to panic if the underlying socket cannot be
-    /// bound (e.g. the port is already in use).
-    fn new(remote: Ipv4Addr, port: u16) -> Self;
-
+/// You can box any implementation and pass it to [`tuio11::Client`](crate::tuio11::Client)
+/// or [`tuio20::Client`](crate::tuio20::Client) to use a custom transport.
+pub trait OscReceiver {
     /// Blocks until the next OSC packet is received and returns it.
     ///
     /// # Errors
@@ -60,7 +52,7 @@ pub struct UdpOscReceiver {
     buffer: [u8; MTU],
 }
 
-impl OscReceiver for UdpOscReceiver {
+impl UdpOscReceiver {
     /// Binds a UDP socket to `remote:port` and returns a new [`UdpOscReceiver`].
     ///
     /// # Panics
@@ -80,7 +72,9 @@ impl OscReceiver for UdpOscReceiver {
             buffer: [0u8; MTU],
         }
     }
+}
 
+impl OscReceiver for UdpOscReceiver {
     /// Blocks until a UDP datagram arrives, decodes it as an OSC packet, and returns it.
     ///
     /// # Errors
@@ -149,6 +143,13 @@ pub mod websocket {
     }
 
     impl WebsocketOscReceiver {
+        /// Connects to `ws://remote:port` (retrying until successful) and returns
+        /// a new [`WebsocketOscReceiver`].
+        fn new(remote: Ipv4Addr, port: u16) -> Self {
+            let socket = WebsocketOscReceiver::connect_with_retry(remote, port);
+            Self { socket }
+        }
+
         /// Attempts to open a WebSocket connection to `ws://remote:port`, retrying
         /// every 2 seconds until the connection succeeds.
         fn connect_with_retry(remote: Ipv4Addr, port: u16) -> WebSocket<MaybeTlsStream<TcpStream>> {
@@ -169,13 +170,6 @@ pub mod websocket {
     }
 
     impl OscReceiver for WebsocketOscReceiver {
-        /// Connects to `ws://remote:port` (retrying until successful) and returns
-        /// a new [`WebsocketOscReceiver`].
-        fn new(remote: Ipv4Addr, port: u16) -> Self {
-            let socket = WebsocketOscReceiver::connect_with_retry(remote, port);
-            Self { socket }
-        }
-
         /// Blocks until the next WebSocket message arrives, decodes it as an OSC
         /// packet, and returns it.
         ///

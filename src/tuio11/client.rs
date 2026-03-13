@@ -8,15 +8,15 @@ use crate::{
 /// A high-level TUIO 1.1 client that receives OSC packets and processes them
 /// into typed TUIO events.
 ///
-/// `Client` is generic over any [`OscReceiver`] implementation, making it usable
-/// with both UDP and WebSocket transports. The most common usage is with the
-/// provided [`UdpOscReceiver`], available via [`Client::default()`].
+/// `Client` accepts any [`OscReceiver`] implementation, making it usable with
+/// both UDP and WebSocket transports. The most common usage is with the provided
+/// [`UdpOscReceiver`], available via [`Client::default()`].
 ///
 /// # Example
 ///
 /// ```no_run
 /// use std::net::Ipv4Addr;
-/// use tuioxide::core::osc_receiver::{OscReceiver, UdpOscReceiver};
+/// use tuioxide::core::osc_receiver::UdpOscReceiver;
 /// use tuioxide::tuio11::Client;
 ///
 /// let receiver = UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
@@ -30,22 +30,19 @@ use crate::{
 ///     }
 /// }
 /// ```
-pub struct Client<T: OscReceiver> {
-    receiver: T,
+pub struct Client {
+    receiver: Box<dyn OscReceiver>,
     processor: Processor,
 }
 
-impl<T> Client<T>
-where
-    T: OscReceiver,
-{
+impl Client {
     /// Creates a new `Client` with the given [`OscReceiver`].
     ///
     /// The processor is initialised with an empty state and will begin tracking
     /// TUIO entities as packets are received via [`Client::update`].
-    pub fn new(receiver: T) -> Self {
+    pub fn new(receiver: impl OscReceiver + 'static) -> Self {
         Self {
-            receiver,
+            receiver: Box::new(receiver),
             processor: Processor::default(),
         }
     }
@@ -70,7 +67,7 @@ where
     }
 }
 
-impl Default for Client<UdpOscReceiver> {
+impl Default for Client {
     /// Creates a default `Client` backed by a [`UdpOscReceiver`] bound to
     /// `127.0.0.1:3333`, which is the standard TUIO UDP port.
     fn default() -> Self {
