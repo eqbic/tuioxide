@@ -9,6 +9,7 @@ mod osc_utils;
 pub(crate) mod processor;
 mod profile;
 mod rotation;
+mod server;
 mod translation;
 mod tuio_state;
 mod tuio_time;
