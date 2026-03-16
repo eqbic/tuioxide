@@ -4,6 +4,7 @@ mod container;
 mod errors;
 mod math;
 pub mod osc_receiver;
+mod osc_sender;
 mod osc_utils;
 pub(crate) mod processor;
 mod profile;
