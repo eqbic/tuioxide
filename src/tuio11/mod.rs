@@ -5,6 +5,7 @@ mod events;
 mod object;
 pub(crate) mod osc_decoder_encoder;
 pub(crate) mod processor;
+mod repository;
 
 pub use blob::Blob;
 pub use cursor::Cursor;
