@@ -6,7 +6,7 @@ use std::{
 use rosc::OscPacket;
 
 use crate::{
-    core::{Profile, TuioTime, processor::TuioProcessor, retain_alive},
+    core::{TuioEntity, TuioTime, processor::TuioProcessor, retain_alive},
     tuio20::{
         Bounds, BoundsEvent, Pointer, PointerEvent, Symbol, SymbolEvent, Token, TokenEvent,
         TuioEvents,
