@@ -1,6 +1,6 @@
 use crate::core::math::{Position, Velocity};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct Translation {
     pub(crate) position: Position,
     last_position: Position,
