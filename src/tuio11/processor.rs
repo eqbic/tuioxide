@@ -7,7 +7,7 @@ use log::{debug, warn};
 use rosc::OscPacket;
 
 use crate::{
-    core::{Profile, TuioTime, processor::TuioProcessor, retain_alive},
+    core::{TuioTime, processor::TuioProcessor, retain_alive},
     tuio11::{
         Blob, BlobEvent, Cursor, CursorEvent, Object, ObjectEvent, TuioEvents,
         bundle::{EntityType, TuioBundle, TuioBundleType},
@@ -130,9 +130,8 @@ fn process_cursors(
                 }
                 None => {
                     let session_id = active_cursor.session_id();
-                    let new_cursor = Cursor::new(current_time, *active_cursor);
-                    current_cursors.insert(session_id, new_cursor);
-                    let event = CursorEvent::Add(new_cursor);
+                    current_cursors.insert(session_id, *active_cursor);
+                    let event = CursorEvent::Add(*active_cursor);
                     events.push(event);
                 }
             };
@@ -164,9 +163,8 @@ fn process_objects(
                 }
                 None => {
                     let session_id = active_object.session_id();
-                    let new_object = Object::new(current_time, *active_object);
-                    current_objects.insert(session_id, new_object);
-                    let event = ObjectEvent::Add(new_object);
+                    current_objects.insert(session_id, *active_object);
+                    let event = ObjectEvent::Add(*active_object);
                     events.push(event);
                 }
             };
@@ -196,9 +194,8 @@ fn process_blobs(
                 }
                 None => {
                     let session_id = active_blob.session_id();
-                    let new_blob = Blob::new(current_time, *active_blob);
-                    current_blobs.insert(session_id, new_blob);
-                    let event = BlobEvent::Add(new_blob);
+                    current_blobs.insert(session_id, *active_blob);
+                    let event = BlobEvent::Add(*active_blob);
                     events.push(event);
                 }
             };

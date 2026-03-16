@@ -1,7 +1,7 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    ArgCursor, Container, Position, Profile, Rotation, Size, Translation, TuioError, TuioTime,
+    ArgCursor, Container, Position, TuioEntity, Rotation, Size, Translation, TuioError, TuioTime,
     Velocity,
 };
 
@@ -14,7 +14,7 @@ use crate::core::{
 ///
 /// Blobs are produced by the TUIO 1.1 client processor and delivered via
 /// [`BlobEvent`](crate::tuio11::event::BlobEvent).
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Blob {
     container: Container,
     translation: Translation,
@@ -23,26 +23,97 @@ pub struct Blob {
     area: f32,
 }
 
+impl TuioEntity for Blob {
+    fn session_id(&self) -> i32 {
+        self.session_id()
+    }
+
+    fn address() -> String {
+        "/tuio/2Dblb".into()
+    }
+}
+
+impl From<Blob> for OscPacket {
+    fn from(blob: Blob) -> Self {
+        OscPacket::Message(OscMessage {
+            addr: Blob::address(),
+            args: vec![
+                OscType::String("set".into()),
+                OscType::Int(blob.session_id()),
+                OscType::Float(blob.position().x),
+                OscType::Float(blob.position().y),
+                OscType::Float(blob.angle()),
+                OscType::Float(blob.size().width),
+                OscType::Float(blob.size().height),
+                OscType::Float(blob.area()),
+                OscType::Float(blob.velocity().x),
+                OscType::Float(blob.velocity().y),
+                OscType::Float(blob.rotation_speed()),
+                OscType::Float(blob.acceleration()),
+                OscType::Float(blob.rotation_acceleration()),
+            ],
+        })
+    }
+}
+
+impl<'a> TryFrom<&'a OscMessage> for Blob {
+    type Error = TuioError;
+
+    fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
+        let mut args = ArgCursor::new(message, 1);
+        let session_id = args.next_int()?;
+        let position = Position::new(args.next_float()?, args.next_float()?);
+        let velocity = Velocity::new(args.next_float()?, args.next_float()?);
+        let acceleration = args.next_float()?;
+        let angle = args.next_float()?;
+        let size = Size::new(args.next_float()?, args.next_float()?);
+        let area = args.next_float()?;
+        let rotation_speed = args.next_float()?;
+        let rotation_acceleration = args.next_float()?;
+
+        let container = Container::new(&TuioTime::from_system_time().unwrap(), session_id);
+        let translation = Translation::new(position, velocity, acceleration);
+        let rotation = Rotation::new(angle, rotation_speed, rotation_acceleration);
+        Ok(Blob {
+            container,
+            translation,
+            rotation,
+            size,
+            area,
+        })
+    }
+}
+
 impl Blob {
-    pub(crate) fn new(start_time: &TuioTime, blob: BlobProfile) -> Self {
-        let container = Container::new(start_time, blob.session_id);
-        let translation = Translation::new(blob.position, blob.velocity, blob.acceleration);
-        let rotation = Rotation::new(blob.angle, blob.rotation_speed, blob.rotation_acceleration);
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn new(
+        start_time: &TuioTime,
+        session_id: i32,
+        position: Position,
+        velocity: Velocity,
+        acceleration: f32,
+        angle: f32,
+        rotation_speed: f32,
+        rotation_acceleration: f32,
+        size: Size,
+        area: f32,
+    ) -> Self {
+        let container = Container::new(start_time, session_id);
+        let translation = Translation::new(position, velocity, acceleration);
+        let rotation = Rotation::new(angle, rotation_speed, rotation_acceleration);
         Self {
             container,
             translation,
             rotation,
-            size: blob.size,
-            area: blob.area,
+            size,
+            area,
         }
     }
 
-    pub(crate) fn update(&mut self, time: &TuioTime, blob: &BlobProfile) {
+    pub(crate) fn update(&mut self, time: &TuioTime, blob: &Blob) {
         self.container.update(time);
-        self.translation
-            .update(blob.position, blob.velocity, blob.acceleration);
-        self.rotation
-            .update(blob.angle, blob.rotation_speed, blob.rotation_acceleration);
+        self.translation = blob.translation;
+        self.rotation = blob.rotation;
         self.size = blob.size;
         self.area = blob.area;
     }
@@ -113,107 +184,5 @@ impl Blob {
     /// Returns the surface area covered by this blob, in normalized units.
     pub fn area(&self) -> f32 {
         self.area
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct BlobProfile {
-    session_id: i32,
-    position: Position,
-    velocity: Velocity,
-    acceleration: f32,
-    angle: f32,
-    size: Size,
-    area: f32,
-    rotation_speed: f32,
-    rotation_acceleration: f32,
-}
-
-impl<'a> TryFrom<&'a OscMessage> for BlobProfile {
-    type Error = TuioError;
-
-    fn try_from(message: &'a OscMessage) -> Result<Self, Self::Error> {
-        let mut args = ArgCursor::new(message, 1);
-        let session_id = args.next_int()?;
-        let position = Position::new(args.next_float()?, args.next_float()?);
-        let velocity = Velocity::new(args.next_float()?, args.next_float()?);
-        let acceleration = args.next_float()?;
-        let angle = args.next_float()?;
-        let size = Size::new(args.next_float()?, args.next_float()?);
-        let area = args.next_float()?;
-        let rotation_speed = args.next_float()?;
-        let rotation_acceleration = args.next_float()?;
-        let blob = BlobProfile::new(
-            session_id,
-            position,
-            angle,
-            size,
-            area,
-            velocity,
-            rotation_speed,
-            acceleration,
-            rotation_acceleration,
-        );
-        Ok(blob)
-    }
-}
-
-impl From<BlobProfile> for OscPacket {
-    fn from(val: BlobProfile) -> Self {
-        OscPacket::Message(OscMessage {
-            addr: BlobProfile::address(),
-            args: vec![
-                OscType::String("set".into()),
-                OscType::Int(val.session_id),
-                OscType::Float(val.position.x),
-                OscType::Float(val.position.y),
-                OscType::Float(val.angle),
-                OscType::Float(val.size.width),
-                OscType::Float(val.size.height),
-                OscType::Float(val.area),
-                OscType::Float(val.velocity.x),
-                OscType::Float(val.velocity.y),
-                OscType::Float(val.rotation_speed),
-                OscType::Float(val.acceleration),
-                OscType::Float(val.rotation_acceleration),
-            ],
-        })
-    }
-}
-
-impl Profile for BlobProfile {
-    fn session_id(&self) -> i32 {
-        self.session_id
-    }
-
-    fn address() -> String {
-        "/tuio/2Dblb".into()
-    }
-}
-
-impl BlobProfile {
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn new(
-        session_id: i32,
-        position: Position,
-        angle: f32,
-        size: Size,
-        area: f32,
-        velocity: Velocity,
-        rotation_speed: f32,
-        acceleration: f32,
-        rotation_acceleration: f32,
-    ) -> Self {
-        Self {
-            session_id,
-            position,
-            velocity,
-            acceleration,
-            angle,
-            size,
-            area,
-            rotation_acceleration,
-            rotation_speed,
-        }
     }
 }

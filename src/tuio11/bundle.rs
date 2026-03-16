@@ -5,7 +5,7 @@ use rosc::{OscMessage, OscType};
 
 use crate::{
     core::TuioError,
-    tuio11::{blob::BlobProfile, cursor::CursorProfile, object::ObjectProfile},
+    tuio11::{Blob, Cursor, Object},
 };
 
 #[derive(Debug, Clone, Default, Copy)]
@@ -19,9 +19,9 @@ pub(crate) enum TuioBundleType {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum EntityType {
-    Cursor(Vec<CursorProfile>),
-    Object(Vec<ObjectProfile>),
-    Blob(Vec<BlobProfile>),
+    Cursor(Vec<Cursor>),
+    Object(Vec<Object>),
+    Blob(Vec<Blob>),
 }
 
 #[derive(Debug, Clone, Default)]
@@ -80,7 +80,7 @@ impl TuioBundle {
                     if message.args.len() != 7 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
-                    let cursor = CursorProfile::try_from(message)?;
+                    let cursor = Cursor::try_from(message)?;
                     set.push(cursor);
                 }
             }
@@ -91,7 +91,7 @@ impl TuioBundle {
                     if message.args.len() != 11 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
-                    let object = ObjectProfile::try_from(message)?;
+                    let object = Object::try_from(message)?;
                     set.push(object);
                 }
             }
@@ -101,7 +101,7 @@ impl TuioBundle {
                     if message.args.len() != 13 {
                         return Err(TuioError::MissingArguments(message.clone()));
                     }
-                    let blob = BlobProfile::try_from(message)?;
+                    let blob = Blob::try_from(message)?;
                     set.push(blob);
                 }
             }
