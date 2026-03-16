@@ -4,7 +4,7 @@ use rosc::OscBundle;
 
 use crate::{core::TuioEntity, tuio11::osc_decoder_encoder::OscEncoder};
 
-struct TuioRepository<E: TuioEntity> {
+pub(crate) struct TuioRepository<E: TuioEntity> {
     source: Option<String>,
     entities: HashMap<i32, E>,
     tuio_address: String,
@@ -12,13 +12,17 @@ struct TuioRepository<E: TuioEntity> {
 }
 
 impl<E: TuioEntity> TuioRepository<E> {
-    pub fn new(source: Option<String>, tuio_address: String) -> Self {
+    pub fn new(source: &Option<String>) -> Self {
         Self {
-            source,
+            source: source.clone(),
             entities: HashMap::new(),
-            tuio_address,
+            tuio_address: E::address(),
             frame_id: 0,
         }
+    }
+
+    pub fn update(&mut self, frame_id: i32) {
+        self.frame_id = frame_id
     }
 
     pub fn add(&mut self, entity: E) {
