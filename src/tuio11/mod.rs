@@ -2,6 +2,7 @@ mod blob;
 pub(crate) mod bundle;
 mod cursor;
 mod events;
+mod manager;
 mod object;
 pub(crate) mod osc_decoder_encoder;
 pub(crate) mod processor;
