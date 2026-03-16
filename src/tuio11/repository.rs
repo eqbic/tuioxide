@@ -1,33 +1,43 @@
-use rosc::{OscMessage, OscType};
+use std::collections::HashMap;
 
-use crate::core::Profile;
+use rosc::OscBundle;
 
-struct TuioRepository {
+use crate::{core::TuioEntity, tuio11::osc_decoder_encoder::OscEncoder};
+
+struct TuioRepository<E: TuioEntity> {
     source: Option<String>,
+    entities: HashMap<i32, E>,
     tuio_address: String,
-    frame_id: u32,
+    frame_id: i32,
 }
 
-impl TuioRepository {
+impl<E: TuioEntity> TuioRepository<E> {
     pub fn new(source: Option<String>, tuio_address: String) -> Self {
         Self {
             source,
+            entities: HashMap::new(),
             tuio_address,
             frame_id: 0,
         }
     }
 
-    pub fn source_message(&self) -> Option<OscMessage> {
-        if let Some(source) = &self.source {
-            let message = OscMessage {
-                addr: self.tuio_address.clone(),
-                args: vec![
-                    OscType::String("source".into()),
-                    OscType::String(source.into()),
-                ],
-            };
-            return Some(message);
-        }
-        None
+    pub fn add(&mut self, entity: E) {
+        self.entities.insert(entity.session_id(), entity);
+    }
+
+    pub fn remove(&mut self, session_id: i32) {
+        self.entities.remove(&session_id);
+    }
+
+    pub fn clear(&mut self) {
+        self.entities.clear();
+    }
+
+    pub fn bundle(&self) -> OscBundle {
+        OscEncoder::encode_bundle(
+            self.entities.values().cloned(),
+            self.source.as_deref(),
+            self.frame_id,
+        )
     }
 }
