@@ -6,7 +6,7 @@ use std::{
 use rosc::OscPacket;
 
 pub trait OscSender: Send {
-    fn send(&mut self, packet: &OscPacket) -> Result<(), io::Error>;
+    fn send(&self, packet: &OscPacket) -> Result<(), io::Error>;
 }
 
 pub struct UdpOscSender {
@@ -25,7 +25,7 @@ impl UdpOscSender {
 }
 
 impl OscSender for UdpOscSender {
-    fn send(&mut self, packet: &OscPacket) -> Result<(), io::Error> {
+    fn send(&self, packet: &OscPacket) -> Result<(), io::Error> {
         let buffer = rosc::encoder::encode(packet).unwrap();
         if let Err(error) = self.socket.send_to(&buffer, self.address) {
             log::error!("Could not send osc packet to {}: {}", self.address, error);
