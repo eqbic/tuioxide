@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use rosc::OscPacket;
 
 use crate::{
@@ -6,7 +8,7 @@ use crate::{
 };
 
 pub struct Server<S: OscSender> {
-    sender: S,
+    senders: HashSet<S>,
     cursors: TuioRepository<Cursor>,
     objects: TuioRepository<Object>,
     blobs: TuioRepository<Blob>,
@@ -15,9 +17,9 @@ pub struct Server<S: OscSender> {
 }
 
 impl<S: OscSender> Server<S> {
-    pub fn new(source_name: &str, sender: S) -> Self {
+    pub fn new(source_name: &str) -> Self {
         Self {
-            sender,
+            senders: HashSet::new(),
             cursors: TuioRepository::new(source_name),
             objects: TuioRepository::new(source_name),
             blobs: TuioRepository::new(source_name),
@@ -26,14 +28,17 @@ impl<S: OscSender> Server<S> {
         }
     }
 
+    pub fn add_sender(&mut self, sender: S) {
+        self.senders.insert(sender);
+    }
+
     pub fn send_frame(&mut self) -> Result<(), std::io::Error> {
         self.frame_id += 1;
-        self.sender
-            .send(&OscPacket::Bundle(self.cursors.bundle(self.frame_id)))?;
-        self.sender
-            .send(&OscPacket::Bundle(self.objects.bundle(self.frame_id)))?;
-        self.sender
-            .send(&OscPacket::Bundle(self.blobs.bundle(self.frame_id)))?;
+        for sender in &self.senders {
+            sender.send(&OscPacket::Bundle(self.cursors.bundle(self.frame_id)))?;
+            sender.send(&OscPacket::Bundle(self.objects.bundle(self.frame_id)))?;
+            sender.send(&OscPacket::Bundle(self.blobs.bundle(self.frame_id)))?;
+        }
         Ok(())
     }
 

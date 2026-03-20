@@ -1,14 +1,16 @@
 use std::{
+    hash::Hash,
     io,
     net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket},
 };
 
 use rosc::OscPacket;
 
-pub trait OscSender: Send {
+pub trait OscSender: Send + Hash + Eq {
     fn send(&self, packet: &OscPacket) -> Result<(), io::Error>;
 }
 
+#[derive(Debug)]
 pub struct UdpOscSender {
     socket: UdpSocket,
     address: SocketAddr,
@@ -22,6 +24,20 @@ impl UdpOscSender {
             socket,
             address: target,
         })
+    }
+}
+
+impl Eq for UdpOscSender {}
+
+impl PartialEq for UdpOscSender {
+    fn eq(&self, other: &Self) -> bool {
+        self.address == other.address
+    }
+}
+
+impl Hash for UdpOscSender {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.address.hash(state);
     }
 }
 
