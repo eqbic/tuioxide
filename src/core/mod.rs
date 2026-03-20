@@ -3,6 +3,7 @@ pub mod constants;
 mod container;
 mod profile;
 mod errors;
+pub(crate) mod manager;
 mod math;
 pub mod osc_receiver;
 mod osc_sender;
