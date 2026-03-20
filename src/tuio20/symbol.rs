@@ -1,6 +1,6 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
-use crate::core::{ArgCursor, TuioProfile, TuioError, TuioTime};
+use crate::core::{ArgCursor, TuioError, TuioProfile, TuioTime};
 
 /// A TUIO 2.0 symbol entity, representing a tagged object with a textual group
 /// and data payload, tracked on a touch surface.
@@ -103,10 +103,6 @@ pub(crate) struct SymbolProfile {
 }
 
 impl TuioProfile for SymbolProfile {
-    fn session_id(&self) -> i32 {
-        self.session_id
-    }
-
     fn address() -> String {
         "/tuio2/sym".to_string()
     }

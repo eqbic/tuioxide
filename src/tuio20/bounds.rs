@@ -1,7 +1,7 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    ArgCursor, Container, Position,, Rotation, Size, Translation TuioEntity,, TuioError, TuioTime,
+    ArgCursor, Container, Position, Rotation, Size, Translation, TuioError, TuioProfile, TuioTime,
     Velocity,
 };
 
@@ -192,10 +192,6 @@ impl From<BoundsProfile> for OscPacket {
 }
 
 impl TuioProfile for BoundsProfile {
-    fn session_id(&self) -> i32 {
-        self.session_id
-    }
-
     fn address() -> String {
         "/tuio2/bnd".to_string()
     }

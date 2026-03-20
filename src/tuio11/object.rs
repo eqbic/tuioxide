@@ -71,10 +71,6 @@ impl From<Object> for OscPacket {
 }
 
 impl TuioProfile for Object {
-    fn session_id(&self) -> i32 {
-        self.session_id()
-    }
-
     fn address() -> String {
         "/tuio/2Dobj".into()
     }
