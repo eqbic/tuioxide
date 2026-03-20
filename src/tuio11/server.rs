@@ -23,7 +23,7 @@ impl<S: OscSender> Server<S> {
             cursors: TuioRepository::new(source_name),
             objects: TuioRepository::new(source_name),
             blobs: TuioRepository::new(source_name),
-            next_session_id: -1,
+            next_session_id: 0,
             frame_id: 0,
         }
     }
