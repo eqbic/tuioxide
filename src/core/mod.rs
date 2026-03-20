@@ -2,7 +2,7 @@ pub mod client;
 pub mod constants;
 mod container;
 mod errors;
-pub(crate) mod manager;
+pub mod manager;
 mod math;
 pub mod osc_receiver;
 pub mod osc_sender;

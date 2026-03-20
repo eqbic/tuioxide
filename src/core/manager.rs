@@ -1,6 +1,6 @@
 use rosc::OscBundle;
 
-pub(crate) trait TuioManager {
+pub trait TuioManager {
     type TuioEntity;
     fn current_session_id(&self) -> i32;
     fn add(&mut self, entity: Self::TuioEntity);
