@@ -1,4 +1,4 @@
-use std::ops::Sub;
+use std::ops::{Add, Sub};
 
 /// A 2D position in normalized coordinates (typically in the range `[0.0, 1.0]`).
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -7,6 +7,17 @@ pub struct Position {
     pub x: f32,
     /// Vertical component.
     pub y: f32,
+}
+
+impl Add for Position {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
 }
 
 impl Position {

@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use rosc::OscPacket;
 
 /// Trait representing a TUIO entity — a typed, addressable OSC entity
@@ -5,7 +7,7 @@ use rosc::OscPacket;
 ///
 /// Each entity type maps to a specific OSC address (e.g. `/tuio/2Dcur`)
 /// and can be converted into an [`OscPacket`] for transmission.
-pub trait TuioProfile: Into<OscPacket> + Clone {
+pub trait TuioProfile: Into<OscPacket> + Clone + Debug {
     /// Returns the session ID of this entity instance.
     ///
     /// Session IDs are assigned by the TUIO source and uniquely identify

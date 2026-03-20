@@ -7,7 +7,6 @@ use crate::{core::TuioProfile, tuio11::osc_decoder_encoder::OscEncoder};
 pub(crate) struct TuioRepository<P: TuioProfile> {
     source: Option<String>,
     entities: HashMap<i32, P>,
-    tuio_address: String,
 }
 
 impl<P: TuioProfile> TuioRepository<P> {
@@ -15,11 +14,14 @@ impl<P: TuioProfile> TuioRepository<P> {
         Self {
             source: source.clone(),
             entities: HashMap::new(),
-            tuio_address: P::address(),
         }
     }
 
-    pub fn update(&mut self, frame_id: i32) -> OscBundle {
+    pub fn update(&mut self, frame_id: i32, entity: P) -> OscBundle {
+        if let Some(e) = self.entities.get_mut(&entity.session_id()) {
+            *e = entity
+        }
+
         OscEncoder::encode_bundle(
             self.entities.values().cloned(),
             self.source.as_deref(),

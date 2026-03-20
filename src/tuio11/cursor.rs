@@ -24,7 +24,7 @@ impl TuioProfile for Cursor {
     }
 
     fn session_id(&self) -> i32 {
-        self.session_id()
+        self.container.session_id
     }
 }
 
@@ -100,6 +100,10 @@ impl Cursor {
     /// corner and `(1, 1)` is the bottom-right corner.
     pub fn position(&self) -> Position {
         self.translation.position
+    }
+
+    pub fn set_position(&mut self, position: Position) {
+        self.translation.position = position;
     }
 
     /// Returns the current 2D velocity vector of this cursor.

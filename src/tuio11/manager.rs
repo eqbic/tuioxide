@@ -28,11 +28,25 @@ impl Manager {
 }
 impl TuioManager for Manager {
     type TuioEntity = TuioEntity;
-    fn update(&mut self) -> &Vec<OscBundle> {
+    fn update(&mut self, entities: &[TuioEntity]) -> &Vec<OscBundle> {
         self.frame_id += 1;
-        self.frame_bundles[0] = self.cursors.update(self.frame_id);
-        self.frame_bundles[1] = self.objects.update(self.frame_id);
-        self.frame_bundles[2] = self.blobs.update(self.frame_id);
+        self.frame_bundles.clear();
+        for entity in entities {
+            match entity {
+                TuioEntity::Cursor(cursor) => {
+                    self.frame_bundles
+                        .push(self.cursors.update(self.frame_id, *cursor));
+                }
+                TuioEntity::Object(object) => {
+                    self.frame_bundles
+                        .push(self.objects.update(self.frame_id, *object));
+                }
+                TuioEntity::Blob(blob) => {
+                    self.frame_bundles
+                        .push(self.blobs.update(self.frame_id, *blob));
+                }
+            }
+        }
         &self.frame_bundles
     }
 
