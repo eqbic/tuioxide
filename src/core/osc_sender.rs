@@ -1,6 +1,6 @@
 use std::{
     io,
-    net::{SocketAddr, UdpSocket},
+    net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket},
 };
 
 use rosc::OscPacket;
@@ -31,5 +31,12 @@ impl OscSender for UdpOscSender {
             log::error!("Could not send osc packet to {}: {}", self.address, error);
         }
         Ok(())
+    }
+}
+
+impl Default for UdpOscSender {
+    fn default() -> Self {
+        Self::new(SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 3333))
+            .expect("Could not create UdpOscSender.")
     }
 }
