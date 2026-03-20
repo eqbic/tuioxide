@@ -1,8 +1,11 @@
 use rosc::OscBundle;
 
-use crate::tuio11::{Blob, Cursor, Object, entity::TuioEntity, repository::TuioRepository};
+use crate::{
+    core::manager::TuioManager,
+    tuio11::{Blob, Cursor, Object, entity::TuioEntity, repository::TuioRepository},
+};
 
-struct Manager {
+pub struct Manager {
     cursors: TuioRepository<Cursor>,
     objects: TuioRepository<Object>,
     blobs: TuioRepository<Blob>,
@@ -22,8 +25,10 @@ impl Manager {
             frame_id: 0,
         }
     }
-
-    pub fn update(&mut self) -> &Vec<OscBundle> {
+}
+impl TuioManager for Manager {
+    type TuioEntity = TuioEntity;
+    fn update(&mut self) -> &Vec<OscBundle> {
         self.frame_id += 1;
         self.frame_bundles[0] = self.cursors.update(self.frame_id);
         self.frame_bundles[1] = self.objects.update(self.frame_id);
@@ -31,19 +36,24 @@ impl Manager {
         &self.frame_bundles
     }
 
-    pub fn add(&mut self, entity: TuioEntity) {
+    fn add(&mut self, entity: TuioEntity) {
         match entity {
             TuioEntity::Cursor(cursor) => self.cursors.add(cursor),
             TuioEntity::Object(object) => self.objects.add(object),
             TuioEntity::Blob(blob) => self.blobs.add(blob),
         }
+        self.current_session_id += 1;
     }
 
-    pub fn remove(&mut self, entity: TuioEntity) {
+    fn remove(&mut self, entity: TuioEntity) {
         match entity {
             TuioEntity::Cursor(cursor) => self.cursors.remove(cursor.session_id()),
             TuioEntity::Object(object) => self.objects.remove(object.session_id()),
             TuioEntity::Blob(blob) => self.blobs.remove(blob.session_id()),
         }
+    }
+
+    fn current_session_id(&self) -> i32 {
+        self.current_session_id
     }
 }
