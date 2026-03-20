@@ -5,14 +5,14 @@ use rosc::OscBundle;
 use crate::{core::TuioProfile, tuio11::osc_decoder_encoder::OscEncoder};
 
 pub(crate) struct TuioRepository<P: TuioProfile> {
-    source: Option<String>,
+    source: String,
     entities: HashMap<i32, P>,
 }
 
 impl<P: TuioProfile> TuioRepository<P> {
-    pub fn new(source: &Option<String>) -> Self {
+    pub fn new(source: &str) -> Self {
         Self {
-            source: source.clone(),
+            source: source.into(),
             entities: HashMap::new(),
         }
     }
@@ -22,11 +22,7 @@ impl<P: TuioProfile> TuioRepository<P> {
             *e = entity
         }
 
-        OscEncoder::encode_bundle(
-            self.entities.values().cloned(),
-            self.source.as_deref(),
-            frame_id,
-        )
+        OscEncoder::encode_bundle(self.entities.values().cloned(), &self.source, frame_id)
     }
 
     pub fn add(&mut self, entity: P) {

@@ -45,7 +45,7 @@ pub(crate) struct OscEncoder;
 impl OscEncoder {
     pub(crate) fn encode_bundle<E, I>(
         profile_collection: I,
-        source: Option<&str>,
+        source: &str,
         frame_id: i32,
     ) -> OscBundle
     where
@@ -69,16 +69,14 @@ impl OscEncoder {
         });
         let mut preamble = vec![alive_message];
 
-        if let Some(source) = source {
-            let source_message = OscPacket::Message(OscMessage {
-                addr: E::address(),
-                args: vec![
-                    OscType::String("source".into()),
-                    OscType::String(source.into()),
-                ],
-            });
-            preamble.push(source_message);
-        }
+        let source_message = OscPacket::Message(OscMessage {
+            addr: E::address(),
+            args: vec![
+                OscType::String("source".into()),
+                OscType::String(source.into()),
+            ],
+        });
+        preamble.push(source_message);
 
         let frame_message = OscPacket::Message(OscMessage {
             addr: E::address(),
