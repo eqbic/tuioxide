@@ -1,14 +1,30 @@
-use std::io;
+use std::{
+    io,
+    sync::{Arc, Mutex},
+};
 
 use rosc::OscPacket;
 
 use crate::{
-    core::{manager::TuioManager, osc_sender::OscSender},
+    core::{Position, Velocity, manager::TuioManager, osc_sender::OscSender},
     tuio11::{
+        Cursor,
         entity::{self, TuioEntity},
         manager::Manager,
     },
 };
+
+pub struct CursorHandle(Arc<Mutex<Cursor>>);
+
+impl CursorHandle {
+    pub fn set_position(&self, position: Position) {
+        self.0.lock().unwrap().set_position(position);
+    }
+
+    pub fn position(&self) -> Position {
+        self.0.lock().unwrap().position()
+    }
+}
 
 pub struct Server<S: OscSender> {
     manager: Manager,
@@ -20,18 +36,27 @@ impl<S: OscSender> Server<S> {
         Self { manager, sender }
     }
 
-    pub fn add(&mut self, entity: TuioEntity) {
-        self.manager.add(entity);
+    pub fn add_cursor(&mut self, position: Position) -> CursorHandle {
+        let cursor = Cursor::new(
+            self.manager.current_session_id(),
+            position,
+            Velocity::default(),
+            0.0,
+        );
+
+        let handle = CursorHandle(Arc::new(Mutex::new(cursor)));
+        // self.manager.add
+        handle
     }
 
     pub fn remove(&mut self, entity: TuioEntity) {
         self.manager.remove(entity);
     }
 
-    pub fn send_frame(&mut self, entities: &[TuioEntity]) -> Result<(), io::Error> {
-        for bundle in self.manager.update(entities) {
-            self.sender.send(&OscPacket::Bundle(bundle.clone()))?;
-        }
+    pub fn send_frame(&mut self) -> Result<(), io::Error> {
+        // // for bundle in self.manager.update(entities) {
+        //     self.sender.send(&OscPacket::Bundle(bundle.clone()))?;
+        // }
         Ok(())
     }
 

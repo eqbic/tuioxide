@@ -17,11 +17,10 @@ fn main() -> Result<(), io::Error> {
         Velocity::default(),
         0.0,
     );
-
-    server.add(TuioEntity::Cursor(cursor));
+    let cursor = server.add_cursor(Position::default());
     for _ in 0..100 {
         cursor.set_position(cursor.position() + position_delta);
-        server.send_frame(&[TuioEntity::Cursor(cursor)])?;
+        server.send_frame()?;
     }
     server.quit()?;
     println!("test");
