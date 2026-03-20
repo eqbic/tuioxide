@@ -8,7 +8,6 @@ pub(crate) struct TuioRepository<E: TuioEntity> {
     source: Option<String>,
     entities: HashMap<i32, E>,
     tuio_address: String,
-    frame_id: i32,
 }
 
 impl<E: TuioEntity> TuioRepository<E> {
@@ -17,12 +16,15 @@ impl<E: TuioEntity> TuioRepository<E> {
             source: source.clone(),
             entities: HashMap::new(),
             tuio_address: E::address(),
-            frame_id: 0,
         }
     }
 
-    pub fn update(&mut self, frame_id: i32) {
-        self.frame_id = frame_id
+    pub fn update(&mut self, frame_id: i32) -> OscBundle {
+        OscEncoder::encode_bundle(
+            self.entities.values().cloned(),
+            self.source.as_deref(),
+            frame_id,
+        )
     }
 
     pub fn add(&mut self, entity: E) {
@@ -35,13 +37,5 @@ impl<E: TuioEntity> TuioRepository<E> {
 
     pub fn clear(&mut self) {
         self.entities.clear();
-    }
-
-    pub fn bundle(&self) -> OscBundle {
-        OscEncoder::encode_bundle(
-            self.entities.values().cloned(),
-            self.source.as_deref(),
-            self.frame_id,
-        )
     }
 }
