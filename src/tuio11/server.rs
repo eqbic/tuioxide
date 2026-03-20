@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use rosc::OscPacket;
 
 use crate::{
@@ -7,8 +5,8 @@ use crate::{
     tuio11::{Blob, Cursor, Object, repository::TuioRepository},
 };
 
-pub struct Server<S: OscSender> {
-    senders: HashSet<S>,
+pub struct Server {
+    senders: Vec<Box<dyn OscSender>>,
     cursors: TuioRepository<Cursor>,
     objects: TuioRepository<Object>,
     blobs: TuioRepository<Blob>,
@@ -16,10 +14,10 @@ pub struct Server<S: OscSender> {
     frame_id: i32,
 }
 
-impl<S: OscSender> Server<S> {
+impl Server {
     pub fn new(source_name: &str) -> Self {
         Self {
-            senders: HashSet::new(),
+            senders: Vec::new(),
             cursors: TuioRepository::new(source_name),
             objects: TuioRepository::new(source_name),
             blobs: TuioRepository::new(source_name),
@@ -28,22 +26,31 @@ impl<S: OscSender> Server<S> {
         }
     }
 
-    pub fn add_sender(&mut self, sender: S) {
-        self.senders.insert(sender);
+    pub fn next_session_id(&self) -> i32 {
+        self.next_session_id
+    }
+
+    pub fn add_sender(&mut self, sender: impl OscSender + 'static) {
+        self.senders.push(Box::new(sender));
     }
 
     pub fn send_frame(&mut self) -> Result<(), std::io::Error> {
         self.frame_id += 1;
+        let bundles = [
+            OscPacket::Bundle(self.cursors.bundle(self.frame_id)),
+            OscPacket::Bundle(self.objects.bundle(self.frame_id)),
+            OscPacket::Bundle(self.blobs.bundle(self.frame_id)),
+        ];
         for sender in &self.senders {
-            sender.send(&OscPacket::Bundle(self.cursors.bundle(self.frame_id)))?;
-            sender.send(&OscPacket::Bundle(self.objects.bundle(self.frame_id)))?;
-            sender.send(&OscPacket::Bundle(self.blobs.bundle(self.frame_id)))?;
+            for bundle in &bundles {
+                sender.send(bundle)?;
+            }
         }
         Ok(())
     }
 
-    pub fn add_cursor(&mut self, position: Position) -> Cursor {
-        let cursor = Cursor::new(self.next_session_id, position, Velocity::default(), 0.0);
+    pub fn add_cursor(&mut self, session_id: i32, position: Position) -> Cursor {
+        let cursor = Cursor::new(session_id, position, Velocity::default(), 0.0);
         self.cursors.add(cursor);
         self.next_session_id += 1;
         cursor
@@ -57,9 +64,15 @@ impl<S: OscSender> Server<S> {
         self.cursors.remove(cursor.session_id());
     }
 
-    pub fn add_object(&mut self, class_id: i32, position: Position, angle: f32) -> Object {
+    pub fn add_object(
+        &mut self,
+        session_id: i32,
+        class_id: i32,
+        position: Position,
+        angle: f32,
+    ) -> Object {
         let object = Object::new(
-            self.next_session_id,
+            session_id,
             class_id,
             position,
             Velocity::default(),
@@ -81,9 +94,16 @@ impl<S: OscSender> Server<S> {
         self.objects.remove(object.session_id());
     }
 
-    pub fn add_blob(&mut self, position: Position, angle: f32, size: Size, area: f32) -> Blob {
+    pub fn add_blob(
+        &mut self,
+        session_id: i32,
+        position: Position,
+        angle: f32,
+        size: Size,
+        area: f32,
+    ) -> Blob {
         let blob = Blob::new(
-            self.next_session_id,
+            session_id,
             position,
             Velocity::default(),
             0.0,

@@ -6,7 +6,7 @@ use std::{
 
 use rosc::OscPacket;
 
-pub trait OscSender: Send + Hash + Eq {
+pub trait OscSender: Send {
     fn send(&self, packet: &OscPacket) -> Result<(), io::Error>;
 }
 
@@ -24,20 +24,6 @@ impl UdpOscSender {
             socket,
             address: target,
         })
-    }
-}
-
-impl Eq for UdpOscSender {}
-
-impl PartialEq for UdpOscSender {
-    fn eq(&self, other: &Self) -> bool {
-        self.address == other.address
-    }
-}
-
-impl Hash for UdpOscSender {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.address.hash(state);
     }
 }
 
