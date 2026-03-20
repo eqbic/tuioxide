@@ -1,28 +1,48 @@
-use std::{cell::RefCell, rc::Rc};
+use std::io;
 
 use rosc::OscPacket;
 
-use crate::core::{manager::TuioManager, osc_sender::OscSender};
+use crate::{
+    core::{manager::TuioManager, osc_sender::OscSender},
+    tuio11::{
+        entity::{self, TuioEntity},
+        manager::Manager,
+    },
+};
 
-pub struct Server<M: TuioManager + 'static> {
-    sender: Box<dyn OscSender>,
-    manager: Rc<M>,
+pub struct Server<S: OscSender> {
+    manager: Manager,
+    sender: S,
 }
 
-impl<M: TuioManager> Server<M> {
-    pub fn new(sender: impl OscSender + 'static, manager: M) -> Self {
-        Self {
-            sender: Box::new(sender),
-            manager: Rc::new(manager),
-        }
+impl<S: OscSender> Server<S> {
+    pub fn new(sender: S, manager: Manager) -> Self {
+        Self { manager, sender }
     }
 
-    pub fn send(&mut self) {
-        // let bundles = Rc::make_mut(&mut self.manager).update();
-        // for bundle in bundles {
-        //     if let Err(error) = self.sender.send(&OscPacket::Bundle(bundle.clone())) {
-        //         log::error!("Could not send Osc Bundle: {error}");
-        //     }
-        // }
+    pub fn add(&mut self, entity: TuioEntity) {
+        self.manager.add(entity);
+    }
+
+    pub fn remove(&mut self, entity: TuioEntity) {
+        self.manager.remove(entity);
+    }
+
+    pub fn send_frame(&mut self, entities: &[TuioEntity]) -> Result<(), io::Error> {
+        for bundle in self.manager.update(entities) {
+            self.sender.send(&OscPacket::Bundle(bundle.clone()))?;
+        }
+        Ok(())
+    }
+
+    pub fn quit(&mut self) -> Result<(), io::Error> {
+        for bundle in self.manager.quit() {
+            self.sender.send(&OscPacket::Bundle(bundle.clone()))?;
+        }
+        Ok(())
+    }
+
+    pub fn next_session_id(&self) -> i32 {
+        self.manager.current_session_id()
     }
 }

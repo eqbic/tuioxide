@@ -71,10 +71,10 @@ impl TuioManager for Manager {
         self.current_session_id
     }
 
-    fn quit(&mut self) {
+    fn quit(&mut self) -> &Vec<OscBundle> {
         self.cursors.clear();
         self.objects.clear();
         self.blobs.clear();
-        self.update(&[]);
+        self.update(&[])
     }
 }
