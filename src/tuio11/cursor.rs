@@ -22,6 +22,10 @@ impl TuioProfile for Cursor {
     fn address() -> String {
         "/tuio/2Dcur".into()
     }
+
+    fn session_id(&self) -> i32 {
+        self.session_id()
+    }
 }
 
 impl<'a> TryFrom<&'a OscMessage> for Cursor {

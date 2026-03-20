@@ -10,7 +10,7 @@ pub trait TuioProfile: Into<OscPacket> + Clone {
     ///
     /// Session IDs are assigned by the TUIO source and uniquely identify
     /// an active entity within a session.
-    // fn session_id(&self) -> i32;
+    fn session_id(&self) -> i32;
 
     /// Returns the OSC address string for this entity type.
     ///

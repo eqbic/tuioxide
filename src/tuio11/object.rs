@@ -74,6 +74,10 @@ impl TuioProfile for Object {
     fn address() -> String {
         "/tuio/2Dobj".into()
     }
+
+    fn session_id(&self) -> i32 {
+        self.session_id()
+    }
 }
 
 impl Object {
