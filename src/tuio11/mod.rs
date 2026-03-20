@@ -13,6 +13,7 @@ pub use cursor::Cursor;
 pub use events::*;
 pub use object::Object;
 pub(crate) use processor::Processor;
+mod entity;
 
 /// A TUIO 1.1 client. See [`core::Client`] for full documentation.
 pub type Client = crate::core::Client<crate::tuio11::Processor>;
