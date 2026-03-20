@@ -1,5 +1,4 @@
 use std::{
-    hash::Hash,
     io,
     net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket},
 };
