@@ -17,16 +17,14 @@ impl<P: TuioProfile> TuioRepository<P> {
         }
     }
 
-    pub fn update(&mut self, frame_id: i32, entity: P) -> OscBundle {
+    pub fn add(&mut self, entity: P) {
+        self.entities.insert(entity.session_id(), entity);
+    }
+
+    pub fn update(&mut self, entity: P) {
         if let Some(e) = self.entities.get_mut(&entity.session_id()) {
             *e = entity
         }
-
-        OscEncoder::encode_bundle(self.entities.values().cloned(), &self.source, frame_id)
-    }
-
-    pub fn add(&mut self, entity: P) {
-        self.entities.insert(entity.session_id(), entity);
     }
 
     pub fn remove(&mut self, session_id: i32) {
@@ -35,5 +33,9 @@ impl<P: TuioProfile> TuioRepository<P> {
 
     pub fn clear(&mut self) {
         self.entities.clear();
+    }
+
+    pub fn bundle(&self, frame_id: i32) -> OscBundle {
+        OscEncoder::encode_bundle(self.entities.values().cloned(), &self.source, frame_id)
     }
 }
