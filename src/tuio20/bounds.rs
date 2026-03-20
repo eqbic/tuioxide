@@ -195,4 +195,8 @@ impl TuioProfile for BoundsProfile {
     fn address() -> String {
         "/tuio2/bnd".to_string()
     }
+
+    fn session_id(&self) -> i32 {
+        self.session_id
+    }
 }
