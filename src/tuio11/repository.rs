@@ -4,18 +4,18 @@ use rosc::OscBundle;
 
 use crate::{core::TuioProfile, tuio11::osc_decoder_encoder::OscEncoder};
 
-pub(crate) struct TuioRepository<E: TuioProfile> {
+pub(crate) struct TuioRepository<P: TuioProfile> {
     source: Option<String>,
-    entities: HashMap<i32, E>,
+    entities: HashMap<i32, P>,
     tuio_address: String,
 }
 
-impl<E: TuioProfile> TuioRepository<E> {
+impl<P: TuioProfile> TuioRepository<P> {
     pub fn new(source: &Option<String>) -> Self {
         Self {
             source: source.clone(),
             entities: HashMap::new(),
-            tuio_address: E::address(),
+            tuio_address: P::address(),
         }
     }
 
@@ -27,7 +27,7 @@ impl<E: TuioProfile> TuioRepository<E> {
         )
     }
 
-    pub fn add(&mut self, entity: E) {
+    pub fn add(&mut self, entity: P) {
         self.entities.insert(entity.session_id(), entity);
     }
 
