@@ -1,6 +1,6 @@
 use rosc::OscBundle;
 
-use crate::tuio11::{Blob, Cursor, Object, repository::TuioRepository};
+use crate::tuio11::{Blob, Cursor, Object, entity::TuioEntity, repository::TuioRepository};
 
 struct Manager {
     cursors: TuioRepository<Cursor>,
@@ -31,27 +31,19 @@ impl Manager {
         &self.frame_bundles
     }
 
-    pub fn add_cursor(&mut self, cursor: Cursor) {
-        self.cursors.add(cursor);
+    pub fn add(&mut self, entity: TuioEntity) {
+        match entity {
+            TuioEntity::Cursor(cursor) => self.cursors.add(cursor),
+            TuioEntity::Object(object) => self.objects.add(object),
+            TuioEntity::Blob(blob) => self.blobs.add(blob),
+        }
     }
 
-    pub fn remove_cursor(&mut self, session_id: i32) {
-        self.cursors.remove(session_id);
-    }
-
-    pub fn add_object(&mut self, object: Object) {
-        self.objects.add(object);
-    }
-
-    pub fn remove_object(&mut self, session_id: i32) {
-        self.objects.remove(session_id);
-    }
-
-    pub fn add_blob(&mut self, blob: Blob) {
-        self.blobs.add(blob);
-    }
-
-    pub fn remove_blob(&mut self, session_id: i32) {
-        self.blobs.remove(session_id);
+    pub fn remove(&mut self, entity: TuioEntity) {
+        match entity {
+            TuioEntity::Cursor(cursor) => self.cursors.remove(cursor.session_id()),
+            TuioEntity::Object(object) => self.objects.remove(object.session_id()),
+            TuioEntity::Blob(blob) => self.blobs.remove(blob.session_id()),
+        }
     }
 }
