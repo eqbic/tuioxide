@@ -1,7 +1,8 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    ArgCursor, Container, Position, TuioEntity, Rotation, Translation, TuioError, TuioTime, Velocity,
+    ArgCursor, Container, Position,, Rotation, Translation TuioEntity,, TuioError, TuioTime
+   , Velocity,
 };
 
 /// A TUIO 2.0 token entity, representing a tagged physical object on a surface.
@@ -210,7 +211,7 @@ impl From<TokenProfile> for OscPacket {
     }
 }
 
-impl TuioEntity for TokenProfile {
+impl TuioProfile for TokenProfile {
     /// Returns the session ID of this token profile.
     fn session_id(&self) -> i32 {
         self.session_id

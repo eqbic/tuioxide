@@ -1,7 +1,7 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    ArgCursor, Container, Position, TuioEntity, Rotation, Size, Translation, TuioError, TuioTime,
+    ArgCursor, Container, Position, Rotation, Size, Translation, TuioError, TuioProfile, TuioTime,
     Velocity,
 };
 
@@ -23,7 +23,7 @@ pub struct Blob {
     area: f32,
 }
 
-impl TuioEntity for Blob {
+impl TuioProfile for Blob {
     fn session_id(&self) -> i32 {
         self.session_id()
     }

@@ -1,7 +1,7 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    ArgCursor, Container, Position, Translation, TuioEntity, TuioError, TuioTime, Velocity,
+    ArgCursor, Container, Position, Translation, TuioError, TuioProfile, TuioTime, Velocity,
 };
 
 /// A TUIO 1.1 cursor, representing a single touch point on a surface.
@@ -18,7 +18,7 @@ pub struct Cursor {
     translation: Translation,
 }
 
-impl TuioEntity for Cursor {
+impl TuioProfile for Cursor {
     fn session_id(&self) -> i32 {
         self.session_id()
     }

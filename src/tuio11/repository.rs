@@ -2,15 +2,15 @@ use std::collections::HashMap;
 
 use rosc::OscBundle;
 
-use crate::{core::TuioEntity, tuio11::osc_decoder_encoder::OscEncoder};
+use crate::{core::TuioProfile, tuio11::osc_decoder_encoder::OscEncoder};
 
-pub(crate) struct TuioRepository<E: TuioEntity> {
+pub(crate) struct TuioRepository<E: TuioProfile> {
     source: Option<String>,
     entities: HashMap<i32, E>,
     tuio_address: String,
 }
 
-impl<E: TuioEntity> TuioRepository<E> {
+impl<E: TuioProfile> TuioRepository<E> {
     pub fn new(source: &Option<String>) -> Self {
         Self {
             source: source.clone(),

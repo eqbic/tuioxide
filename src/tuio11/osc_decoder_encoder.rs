@@ -2,7 +2,7 @@ use rosc::{OscBundle, OscMessage, OscPacket, OscTime, OscType};
 
 use std::{iter, time::SystemTime};
 
-use crate::core::TuioEntity;
+use crate::core::TuioProfile;
 
 use crate::core::TuioError;
 use crate::tuio11::bundle::{TuioBundle, TuioBundleType};
@@ -49,7 +49,7 @@ impl OscEncoder {
         frame_id: i32,
     ) -> OscBundle
     where
-        E: TuioEntity,
+        E: TuioProfile,
         I: IntoIterator<Item = E>,
     {
         let mut set_messages = vec![];

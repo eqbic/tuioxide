@@ -5,7 +5,7 @@ use rosc::OscPacket;
 ///
 /// Each entity type maps to a specific OSC address (e.g. `/tuio/2Dcur`)
 /// and can be converted into an [`OscPacket`] for transmission.
-pub trait TuioEntity: Into<OscPacket> + Clone {
+pub trait TuioProfile: Into<OscPacket> + Clone {
     /// Returns the session ID of this entity instance.
     ///
     /// Session IDs are assigned by the TUIO source and uniquely identify

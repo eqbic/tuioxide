@@ -1,7 +1,8 @@
 use rosc::{OscMessage, OscPacket, OscType};
 
 use crate::core::{
-    ArgCursor, Container, Position, TuioEntity, Rotation, Translation, TuioError, TuioTime, Velocity,
+    ArgCursor, Container, Position,, Rotation, Translation TuioEntity,, TuioError, TuioTime
+   , Velocity,
 };
 
 /// A TUIO 2.0 pointer entity, corresponding to the `/tuio2/ptr` profile.
@@ -249,7 +250,7 @@ impl From<PointerProfile> for OscPacket {
     }
 }
 
-impl TuioEntity for PointerProfile {
+impl TuioProfile for PointerProfile {
     fn session_id(&self) -> i32 {
         self.session_id
     }
