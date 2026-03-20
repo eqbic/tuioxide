@@ -1,6 +1,6 @@
 use std::io;
 
-use tuioxide::tuio11::{Client, CursorEvent};
+use tuioxide::tuio11::{Client, CursorEvent, ObjectEvent};
 
 fn main() -> Result<(), io::Error> {
     let mut client = Client::default();
@@ -20,6 +20,32 @@ fn main() -> Result<(), io::Error> {
                 ),
                 CursorEvent::Remove(cursor) => {
                     println!("Remove cursor[{}]", cursor.session_id())
+                }
+            }
+        }
+
+        for event in events.object_events {
+            match event {
+                ObjectEvent::Add(object) => println!(
+                    "New object [{}|{}] at {:?} | angle: {}",
+                    object.session_id(),
+                    object.class_id(),
+                    object.position(),
+                    object.angle()
+                ),
+                ObjectEvent::Update(object) => println!(
+                    "Update object[{}|{}] -> {:?} | angle: {}",
+                    object.session_id(),
+                    object.class_id(),
+                    object.position(),
+                    object.angle()
+                ),
+                ObjectEvent::Remove(object) => {
+                    println!(
+                        "Remove object[{}|{}]",
+                        object.session_id(),
+                        object.class_id()
+                    )
                 }
             }
         }
