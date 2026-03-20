@@ -6,7 +6,7 @@ struct Manager {
     cursors: TuioRepository<Cursor>,
     objects: TuioRepository<Object>,
     blobs: TuioRepository<Blob>,
-    // osc_bundles: [OscBundle; 3],
+    frame_bundles: Vec<OscBundle>,
     current_session_id: i32,
     frame_id: i32,
 }
@@ -17,17 +17,18 @@ impl Manager {
             cursors: TuioRepository::new(source),
             objects: TuioRepository::new(source),
             blobs: TuioRepository::new(source),
-            // osc_bundles: ,
+            frame_bundles: Vec::with_capacity(3),
             current_session_id: 0,
             frame_id: 0,
         }
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> &Vec<OscBundle> {
         self.frame_id += 1;
-        self.cursors.update(self.frame_id);
-        self.objects.update(self.frame_id);
-        self.blobs.update(self.frame_id);
+        self.frame_bundles[0] = self.cursors.update(self.frame_id);
+        self.frame_bundles[1] = self.objects.update(self.frame_id);
+        self.frame_bundles[2] = self.blobs.update(self.frame_id);
+        &self.frame_bundles
     }
 
     pub fn add_cursor(&mut self, cursor: Cursor) {
