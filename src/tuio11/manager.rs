@@ -70,4 +70,11 @@ impl TuioManager for Manager {
     fn current_session_id(&self) -> i32 {
         self.current_session_id
     }
+
+    fn quit(&mut self) {
+        self.cursors.clear();
+        self.objects.clear();
+        self.blobs.clear();
+        self.update(&[]);
+    }
 }
