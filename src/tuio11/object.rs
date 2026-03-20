@@ -81,8 +81,7 @@ impl TuioProfile for Object {
 }
 
 impl Object {
-    pub(crate) fn new(
-        start_time: &TuioTime,
+    pub fn new(
         session_id: i32,
         class_id: i32,
         position: Position,
@@ -92,7 +91,7 @@ impl Object {
         rotation_speed: f32,
         rotation_acceleration: f32,
     ) -> Self {
-        let container = Container::new(start_time, session_id);
+        let container = Container::new(&TuioTime::from_system_time().unwrap(), session_id);
         let translation = Translation::new(position, velocity, acceleration);
         let rotation = Rotation::new(angle, rotation_speed, rotation_acceleration);
         Self {

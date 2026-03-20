@@ -65,14 +65,8 @@ impl From<Cursor> for OscPacket {
 }
 
 impl Cursor {
-    pub(crate) fn new(
-        start_time: &TuioTime,
-        session_id: i32,
-        position: Position,
-        velocity: Velocity,
-        acceleration: f32,
-    ) -> Self {
-        let container = Container::new(start_time, session_id);
+    pub fn new(session_id: i32, position: Position, velocity: Velocity, acceleration: f32) -> Self {
+        let container = Container::new(&TuioTime::from_system_time().unwrap(), session_id);
         let translation = Translation::new(position, velocity, acceleration);
         Self {
             container,
