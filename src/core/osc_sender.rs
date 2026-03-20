@@ -16,7 +16,8 @@ pub struct UdpOscSender {
 
 impl UdpOscSender {
     pub fn new(target: SocketAddr) -> Result<Self, io::Error> {
-        let socket = UdpSocket::bind(target)?;
+        let bind_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0);
+        let socket = UdpSocket::bind(bind_addr)?;
         Ok(Self {
             socket,
             address: target,
