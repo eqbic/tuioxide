@@ -81,6 +81,7 @@ impl TuioProfile for Object {
 }
 
 impl Object {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         session_id: i32,
         class_id: i32,
