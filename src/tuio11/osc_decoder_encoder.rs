@@ -43,14 +43,14 @@ impl OscDecoder {
 pub(crate) struct OscEncoder;
 
 impl OscEncoder {
-    pub(crate) fn encode_bundle<T, I>(
+    pub(crate) fn encode_bundle<E, I>(
         profile_collection: I,
         source: Option<&str>,
         frame_id: i32,
     ) -> OscBundle
     where
-        T: TuioEntity,
-        I: IntoIterator<Item = T>,
+        E: TuioEntity,
+        I: IntoIterator<Item = E>,
     {
         let mut set_messages = vec![];
         let mut session_ids: Vec<OscType> = vec![];
@@ -61,7 +61,7 @@ impl OscEncoder {
         }
 
         let alive_message = OscPacket::Message(OscMessage {
-            addr: T::address(),
+            addr: E::address(),
             args: vec![OscType::String("alive".into())]
                 .into_iter()
                 .chain(session_ids)
@@ -71,7 +71,7 @@ impl OscEncoder {
 
         if let Some(source) = source {
             let source_message = OscPacket::Message(OscMessage {
-                addr: T::address(),
+                addr: E::address(),
                 args: vec![
                     OscType::String("source".into()),
                     OscType::String(source.into()),
@@ -81,7 +81,7 @@ impl OscEncoder {
         }
 
         let frame_message = OscPacket::Message(OscMessage {
-            addr: T::address(),
+            addr: E::address(),
             args: vec![OscType::String("fseq".into()), OscType::Int(frame_id)],
         });
 
