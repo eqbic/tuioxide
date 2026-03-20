@@ -1,5 +1,6 @@
 use crate::tuio11::{Blob, Cursor, Object};
 
+#[derive(Debug, Clone, Copy)]
 pub enum TuioEntity {
     Cursor(Cursor),
     Object(Object),
