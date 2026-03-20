@@ -1,3 +1,5 @@
+use std::io;
+
 use rosc::OscPacket;
 
 use crate::{
@@ -46,6 +48,14 @@ impl Server {
                 sender.send(bundle)?;
             }
         }
+        Ok(())
+    }
+
+    pub fn quit(&mut self) -> Result<(), io::Error> {
+        self.cursors.clear();
+        self.objects.clear();
+        self.blobs.clear();
+        self.send_frame()?;
         Ok(())
     }
 
