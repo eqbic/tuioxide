@@ -121,3 +121,215 @@ impl Cursor {
         self.translation.acceleration
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use approx::assert_relative_eq;
+    use rosc::{OscMessage, OscPacket, OscType};
+
+    use crate::core::{Position, Velocity};
+
+    use super::Cursor;
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /// Build a well-formed `/tuio/2Dcur` "set" OscMessage with 7 args.
+    fn make_set_msg(session_id: i32, x: f32, y: f32, vx: f32, vy: f32, accel: f32) -> OscMessage {
+        OscMessage {
+            addr: "/tuio/2Dcur".to_string(),
+            args: vec![
+                OscType::String("set".to_string()),
+                OscType::Int(session_id),
+                OscType::Float(x),
+                OscType::Float(y),
+                OscType::Float(vx),
+                OscType::Float(vy),
+                OscType::Float(accel),
+            ],
+        }
+    }
+
+    // ── TryFrom<&OscMessage> ─────────────────────────────────────────────────
+
+    #[test]
+    fn try_from_decodes_session_id() {
+        let msg = make_set_msg(7, 0.1, 0.2, 0.3, 0.4, 0.5);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        assert_eq!(cursor.session_id(), 7);
+    }
+
+    #[test]
+    fn try_from_decodes_position() {
+        let msg = make_set_msg(1, 0.25, 0.75, 0.0, 0.0, 0.0);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        assert_relative_eq!(cursor.position().x, 0.25);
+        assert_relative_eq!(cursor.position().y, 0.75);
+    }
+
+    #[test]
+    fn try_from_decodes_velocity() {
+        let msg = make_set_msg(1, 0.0, 0.0, 1.5, 2.5, 0.0);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        assert_relative_eq!(cursor.velocity().x, 1.5);
+        assert_relative_eq!(cursor.velocity().y, 2.5);
+    }
+
+    #[test]
+    fn try_from_decodes_acceleration() {
+        let msg = make_set_msg(1, 0.0, 0.0, 0.0, 0.0, 2.34);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        assert_relative_eq!(cursor.acceleration(), 2.34);
+    }
+
+    #[test]
+    fn try_from_missing_args_returns_error() {
+        // Only 3 args (instead of 7) — should fail with MissingArguments.
+        let msg = OscMessage {
+            addr: "/tuio/2Dcur".to_string(),
+            args: vec![
+                OscType::String("set".to_string()),
+                OscType::Int(1),
+                OscType::Float(0.5),
+            ],
+        };
+        assert!(Cursor::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn try_from_wrong_type_returns_error() {
+        // session_id position is occupied by a Float instead of Int.
+        let msg = OscMessage {
+            addr: "/tuio/2Dcur".to_string(),
+            args: vec![
+                OscType::String("set".to_string()),
+                OscType::Float(1.0), // should be Int
+                OscType::Float(0.1),
+                OscType::Float(0.2),
+                OscType::Float(0.0),
+                OscType::Float(0.0),
+                OscType::Float(0.0),
+            ],
+        };
+        assert!(Cursor::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn try_from_empty_message_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio/2Dcur".to_string(),
+            args: vec![],
+        };
+        assert!(Cursor::try_from(&msg).is_err());
+    }
+
+    // ── Round-trip: From<Cursor> for OscPacket ────────────────────────────────
+
+    #[test]
+    fn round_trip_session_id() {
+        let msg = make_set_msg(42, 0.1, 0.9, 0.5, 0.3, 1.2);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        let packet = OscPacket::from(cursor);
+        if let OscPacket::Message(out) = packet {
+            assert_eq!(out.args[1], OscType::Int(42));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn round_trip_position() {
+        let msg = make_set_msg(1, 0.3, 0.7, 0.0, 0.0, 0.0);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        let packet = OscPacket::from(cursor);
+        if let OscPacket::Message(out) = packet {
+            assert_eq!(out.args[2], OscType::Float(0.3));
+            assert_eq!(out.args[3], OscType::Float(0.7));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn round_trip_velocity() {
+        let msg = make_set_msg(1, 0.0, 0.0, 1.5, 2.5, 0.0);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        let packet = OscPacket::from(cursor);
+        if let OscPacket::Message(out) = packet {
+            assert_eq!(out.args[4], OscType::Float(1.5));
+            assert_eq!(out.args[5], OscType::Float(2.5));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn round_trip_acceleration() {
+        let msg = make_set_msg(1, 0.0, 0.0, 0.0, 0.0, 9.81);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        let packet = OscPacket::from(cursor);
+        if let OscPacket::Message(out) = packet {
+            assert_eq!(out.args[6], OscType::Float(9.81));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn round_trip_address_is_2dcur() {
+        let msg = make_set_msg(1, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        let packet = OscPacket::from(cursor);
+        if let OscPacket::Message(out) = packet {
+            assert_eq!(out.addr, "/tuio/2Dcur");
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn round_trip_first_arg_is_set() {
+        let msg = make_set_msg(1, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let cursor = Cursor::try_from(&msg).unwrap();
+        let packet = OscPacket::from(cursor);
+        if let OscPacket::Message(out) = packet {
+            assert_eq!(out.args[0], OscType::String("set".to_string()));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    // ── Cursor::new ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn new_stores_session_id() {
+        let c = Cursor::new(99, Position::new(0.0, 0.0), Velocity::new(0.0, 0.0), 0.0);
+        assert_eq!(c.session_id(), 99);
+    }
+
+    #[test]
+    fn new_stores_position() {
+        let c = Cursor::new(1, Position::new(0.4, 0.6), Velocity::new(0.0, 0.0), 0.0);
+        assert_relative_eq!(c.position().x, 0.4);
+        assert_relative_eq!(c.position().y, 0.6);
+    }
+
+    #[test]
+    fn new_stores_velocity() {
+        let c = Cursor::new(1, Position::new(0.0, 0.0), Velocity::new(1.0, 2.0), 0.0);
+        assert_relative_eq!(c.velocity().x, 1.0);
+        assert_relative_eq!(c.velocity().y, 2.0);
+    }
+
+    #[test]
+    fn new_stores_acceleration() {
+        let c = Cursor::new(1, Position::new(0.0, 0.0), Velocity::new(0.0, 0.0), 5.5);
+        assert_relative_eq!(c.acceleration(), 5.5);
+    }
+
+    #[test]
+    fn new_start_time_equals_current_time_initially() {
+        let c = Cursor::new(1, Position::new(0.0, 0.0), Velocity::new(0.0, 0.0), 0.0);
+        assert_eq!(c.start_time(), c.current_time());
+    }
+}
