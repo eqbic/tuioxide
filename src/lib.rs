@@ -26,7 +26,7 @@
 //! ```no_run
 //! use std::net::Ipv4Addr;
 //! use tuioxide::tuio11::Client;
-//! use tuioxide::client::osc_receiver::{OscReceiver, UdpOscReceiver};
+//! use tuioxide::core::osc_receiver::{OscReceiver, UdpOscReceiver};
 //!
 //! let receiver = UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
 //! let mut client = Client::new(receiver);

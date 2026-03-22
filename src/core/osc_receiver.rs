@@ -41,7 +41,7 @@ pub trait OscReceiver: Send {
 ///
 /// ```no_run
 /// use std::net::Ipv4Addr;
-/// use tuioxide::client::osc_receiver::{OscReceiver, UdpOscReceiver};
+/// use tuioxide::core::osc_receiver::{OscReceiver, UdpOscReceiver};
 ///
 /// let mut receiver = UdpOscReceiver::new(Ipv4Addr::LOCALHOST, 3333);
 /// let packet = receiver.recv().unwrap();
