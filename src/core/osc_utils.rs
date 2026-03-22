@@ -130,3 +130,267 @@ impl<'a> ArgCursor<'a> {
         self.message.args.len() - self.index
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use approx::assert_relative_eq;
+    use rosc::{OscMessage, OscTime, OscType};
+
+    use crate::core::TuioError;
+
+    use super::ArgCursor;
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    fn make_msg(args: Vec<OscType>) -> OscMessage {
+        OscMessage {
+            addr: "/test".to_string(),
+            args,
+        }
+    }
+
+    // ── next_int ─────────────────────────────────────────────────────────────
+
+    #[test]
+    fn next_int_reads_integer() {
+        let msg = make_msg(vec![OscType::Int(42)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.next_int().unwrap(), 42);
+    }
+
+    #[test]
+    fn next_int_advances_cursor() {
+        let msg = make_msg(vec![OscType::Int(1), OscType::Int(2)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.next_int().unwrap(), 1);
+        assert_eq!(cursor.next_int().unwrap(), 2);
+    }
+
+    #[test]
+    fn next_int_wrong_type_returns_error() {
+        let msg = make_msg(vec![OscType::Float(1.0)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_int().unwrap_err();
+        assert!(
+            matches!(err, TuioError::WrongArgumentType(_, 0)),
+            "expected WrongArgumentType, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn next_int_missing_returns_error() {
+        let msg = make_msg(vec![]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_int().unwrap_err();
+        assert!(
+            matches!(err, TuioError::MissingArguments(_)),
+            "expected MissingArguments, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn next_int_wrong_type_error_reports_correct_index() {
+        let msg = make_msg(vec![OscType::Int(1), OscType::Float(2.0)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let _ = cursor.next_int().unwrap(); // consume index 0
+        let err = cursor.next_int().unwrap_err();
+        assert!(
+            matches!(err, TuioError::WrongArgumentType(_, 1)),
+            "expected index 1, got {err:?}"
+        );
+    }
+
+    // ── next_float ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn next_float_reads_float() {
+        let msg = make_msg(vec![OscType::Float(0.345)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_relative_eq!(cursor.next_float().unwrap(), 0.345);
+    }
+
+    #[test]
+    fn next_float_advances_cursor() {
+        let msg = make_msg(vec![OscType::Float(1.0), OscType::Float(2.0)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_relative_eq!(cursor.next_float().unwrap(), 1.0);
+        assert_relative_eq!(cursor.next_float().unwrap(), 2.0);
+    }
+
+    #[test]
+    fn next_float_wrong_type_returns_error() {
+        let msg = make_msg(vec![OscType::Int(1)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_float().unwrap_err();
+        assert!(
+            matches!(err, TuioError::WrongArgumentType(_, 0)),
+            "expected WrongArgumentType, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn next_float_missing_returns_error() {
+        let msg = make_msg(vec![]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_float().unwrap_err();
+        assert!(
+            matches!(err, TuioError::MissingArguments(_)),
+            "expected MissingArguments, got {err:?}"
+        );
+    }
+
+    // ── next_string ──────────────────────────────────────────────────────────
+
+    #[test]
+    fn next_string_reads_string() {
+        let msg = make_msg(vec![OscType::String("hello".to_string())]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.next_string().unwrap(), "hello");
+    }
+
+    #[test]
+    fn next_string_advances_cursor() {
+        let msg = make_msg(vec![
+            OscType::String("first".to_string()),
+            OscType::String("second".to_string()),
+        ]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.next_string().unwrap(), "first");
+        assert_eq!(cursor.next_string().unwrap(), "second");
+    }
+
+    #[test]
+    fn next_string_wrong_type_returns_error() {
+        let msg = make_msg(vec![OscType::Int(99)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_string().unwrap_err();
+        assert!(
+            matches!(err, TuioError::WrongArgumentType(_, 0)),
+            "expected WrongArgumentType, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn next_string_missing_returns_error() {
+        let msg = make_msg(vec![]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_string().unwrap_err();
+        assert!(
+            matches!(err, TuioError::MissingArguments(_)),
+            "expected MissingArguments, got {err:?}"
+        );
+    }
+
+    // ── next_time ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn next_time_reads_time() {
+        // Use a fixed OscTime and verify it converts without error.
+        let osc_time = OscTime {
+            seconds: 3_000_000_000,
+            fractional: 0,
+        };
+        let msg = make_msg(vec![OscType::Time(osc_time)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        // Should succeed and return a TuioTime (exact value tested elsewhere).
+        let _time = cursor.next_time().unwrap();
+    }
+
+    #[test]
+    fn next_time_wrong_type_returns_error() {
+        let msg = make_msg(vec![OscType::Float(1.0)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_time().unwrap_err();
+        assert!(
+            matches!(err, TuioError::WrongArgumentType(_, 0)),
+            "expected WrongArgumentType, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn next_time_missing_returns_error() {
+        let msg = make_msg(vec![]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        let err = cursor.next_time().unwrap_err();
+        assert!(
+            matches!(err, TuioError::MissingArguments(_)),
+            "expected MissingArguments, got {err:?}"
+        );
+    }
+
+    // ── remaining ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn remaining_counts_args_from_start() {
+        let msg = make_msg(vec![OscType::Int(1), OscType::Int(2), OscType::Int(3)]);
+        let cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.remaining(), 3);
+    }
+
+    #[test]
+    fn remaining_counts_from_start_index() {
+        let msg = make_msg(vec![OscType::Int(1), OscType::Int(2), OscType::Int(3)]);
+        // Skip the first arg (e.g. a message-type string).
+        let cursor = ArgCursor::new(&msg, 1);
+        assert_eq!(cursor.remaining(), 2);
+    }
+
+    #[test]
+    fn remaining_decreases_after_reads() {
+        let msg = make_msg(vec![OscType::Int(10), OscType::Int(20), OscType::Int(30)]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.remaining(), 3);
+        let _ = cursor.next_int().unwrap();
+        assert_eq!(cursor.remaining(), 2);
+        let _ = cursor.next_int().unwrap();
+        assert_eq!(cursor.remaining(), 1);
+        let _ = cursor.next_int().unwrap();
+        assert_eq!(cursor.remaining(), 0);
+    }
+
+    #[test]
+    fn remaining_zero_on_empty_message() {
+        let msg = make_msg(vec![]);
+        let cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.remaining(), 0);
+    }
+
+    // ── start_index skipping ─────────────────────────────────────────────────
+
+    #[test]
+    fn start_index_skips_leading_args() {
+        // Mimics TUIO usage: index 0 is the message-type string "set"; we start at 1.
+        let msg = make_msg(vec![
+            OscType::String("set".to_string()),
+            OscType::Int(5),
+            OscType::Float(0.5),
+        ]);
+        let mut cursor = ArgCursor::new(&msg, 1);
+        assert_eq!(cursor.next_int().unwrap(), 5);
+        assert_relative_eq!(cursor.next_float().unwrap(), 0.5);
+        assert_eq!(cursor.remaining(), 0);
+    }
+
+    // ── mixed sequential reads ────────────────────────────────────────────────
+
+    #[test]
+    fn sequential_mixed_reads() {
+        let osc_time = OscTime {
+            seconds: 3_000_000_000,
+            fractional: 0,
+        };
+        let msg = make_msg(vec![
+            OscType::Int(42),
+            OscType::Float(1.5),
+            OscType::String("hello".to_string()),
+            OscType::Time(osc_time),
+        ]);
+        let mut cursor = ArgCursor::new(&msg, 0);
+        assert_eq!(cursor.next_int().unwrap(), 42);
+        assert_relative_eq!(cursor.next_float().unwrap(), 1.5);
+        assert_eq!(cursor.next_string().unwrap(), "hello");
+        let _t = cursor.next_time().unwrap();
+        assert_eq!(cursor.remaining(), 0);
+    }
+}
