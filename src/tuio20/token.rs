@@ -47,7 +47,7 @@ impl Token {
 
     pub(crate) fn update(&mut self, time: &TuioTime, token: &TokenProfile) {
         self.container.update(time);
-        self.translation.update(
+        self.translation.update_from_message(
             token.position,
             token.velocity.unwrap_or_default(),
             token.acceleration.unwrap_or_default(),
@@ -145,8 +145,8 @@ pub struct TokenProfile {
     position: Position,
     angle: f32,
     velocity: Option<Velocity>,
-    acceleration: Option<f32>,
     rotation_speed: Option<f32>,
+    acceleration: Option<f32>,
     rotation_acceleration: Option<f32>,
 }
 
@@ -166,12 +166,12 @@ impl<'a> TryFrom<&'a OscMessage> for TokenProfile {
             } else {
                 None
             },
-            acceleration: if args.remaining() >= 1 {
+            rotation_speed: if args.remaining() >= 1 {
                 Some(args.next_float()?)
             } else {
                 None
             },
-            rotation_speed: if args.remaining() >= 1 {
+            acceleration: if args.remaining() >= 1 {
                 Some(args.next_float()?)
             } else {
                 None
@@ -200,8 +200,8 @@ impl From<TokenProfile> for OscPacket {
             args.extend([OscType::Float(velocity.x), OscType::Float(velocity.y)]);
         }
 
-        args.extend(val.acceleration.into_iter().map(OscType::Float));
         args.extend(val.rotation_speed.into_iter().map(OscType::Float));
+        args.extend(val.acceleration.into_iter().map(OscType::Float));
         args.extend(val.rotation_acceleration.into_iter().map(OscType::Float));
 
         OscPacket::Message(OscMessage {
@@ -219,5 +219,347 @@ impl TuioProfile for TokenProfile {
 
     fn session_id(&self) -> i32 {
         self.session_id
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use approx::assert_relative_eq;
+    use rosc::{OscMessage, OscPacket, OscType};
+
+    use crate::core::TuioProfile;
+
+    use super::TokenProfile;
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /// Build a fully-populated `/tuio2/tok` OscMessage (all optional fields present).
+    fn make_full_msg(
+        session_id: i32,
+        type_user_id: i32,
+        component_id: i32,
+        x: f32,
+        y: f32,
+        angle: f32,
+        vx: f32,
+        vy: f32,
+        rotation_speed: f32,
+        acceleration: f32,
+        rotation_acceleration: f32,
+    ) -> OscMessage {
+        OscMessage {
+            addr: "/tuio2/tok".to_string(),
+            args: vec![
+                OscType::Int(session_id),
+                OscType::Int(type_user_id),
+                OscType::Int(component_id),
+                OscType::Float(x),
+                OscType::Float(y),
+                OscType::Float(angle),
+                OscType::Float(vx),
+                OscType::Float(vy),
+                OscType::Float(rotation_speed),
+                OscType::Float(acceleration),
+                OscType::Float(rotation_acceleration),
+            ],
+        }
+    }
+
+    /// Build a minimal `/tuio2/tok` OscMessage (only the 6 required fields).
+    fn make_minimal_msg(
+        session_id: i32,
+        type_user_id: i32,
+        component_id: i32,
+        x: f32,
+        y: f32,
+        angle: f32,
+    ) -> OscMessage {
+        OscMessage {
+            addr: "/tuio2/tok".to_string(),
+            args: vec![
+                OscType::Int(session_id),
+                OscType::Int(type_user_id),
+                OscType::Int(component_id),
+                OscType::Float(x),
+                OscType::Float(y),
+                OscType::Float(angle),
+            ],
+        }
+    }
+
+    // ── TryFrom with full args ────────────────────────────────────────────────
+
+    #[test]
+    fn full_decodes_session_id() {
+        let msg = make_full_msg(7, 1, 2, 0.5, 0.5, 1.0, 0.1, 0.2, 0.3, 0.4, 0.5);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_eq!(tok.session_id(), 7);
+    }
+
+    #[test]
+    fn full_decodes_type_user_id() {
+        let msg = make_full_msg(1, 42, 3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_eq!(tok.type_user_id, 42);
+    }
+
+    #[test]
+    fn full_decodes_component_id() {
+        let msg = make_full_msg(1, 0, 99, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_eq!(tok.component_id, 99);
+    }
+
+    #[test]
+    fn full_decodes_position() {
+        let msg = make_full_msg(1, 0, 0, 0.25, 0.75, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_relative_eq!(tok.position.x, 0.25);
+        assert_relative_eq!(tok.position.y, 0.75);
+    }
+
+    #[test]
+    fn full_decodes_angle() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 1.256, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_relative_eq!(tok.angle, 1.256);
+    }
+
+    #[test]
+    fn full_decodes_velocity() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 0.0, 1.5, 2.5, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        let v = tok.velocity.expect("velocity should be Some");
+        assert_relative_eq!(v.x, 1.5);
+        assert_relative_eq!(v.y, 2.5);
+    }
+
+    #[test]
+    fn full_decodes_acceleration() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.81, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        let a = tok.acceleration.expect("acceleration should be Some");
+        assert_relative_eq!(a, 9.81);
+    }
+
+    #[test]
+    fn full_decodes_rotation_speed() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.7, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        let rs = tok.rotation_speed.expect("rotation_speed should be Some");
+        assert_relative_eq!(rs, 0.7);
+    }
+
+    #[test]
+    fn full_decodes_rotation_acceleration() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        let ra = tok
+            .rotation_acceleration
+            .expect("rotation_acceleration should be Some");
+        assert_relative_eq!(ra, 0.3);
+    }
+
+    // ── TryFrom with minimal args (no optional fields) ────────────────────────
+
+    #[test]
+    fn minimal_decodes_session_id() {
+        let msg = make_minimal_msg(5, 1, 2, 0.3, 0.8, 1.57);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_eq!(tok.session_id(), 5);
+    }
+
+    #[test]
+    fn minimal_decodes_position() {
+        let msg = make_minimal_msg(1, 0, 0, 0.4, 0.6, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_relative_eq!(tok.position.x, 0.4);
+        assert_relative_eq!(tok.position.y, 0.6);
+    }
+
+    #[test]
+    fn minimal_decodes_angle() {
+        let msg = make_minimal_msg(1, 0, 0, 0.0, 0.0, 2.71);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert_relative_eq!(tok.angle, 2.71);
+    }
+
+    #[test]
+    fn minimal_velocity_is_none() {
+        let msg = make_minimal_msg(1, 0, 0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert!(
+            tok.velocity.is_none(),
+            "velocity should be None when not provided"
+        );
+    }
+
+    #[test]
+    fn minimal_acceleration_is_none() {
+        let msg = make_minimal_msg(1, 0, 0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert!(tok.acceleration.is_none());
+    }
+
+    #[test]
+    fn minimal_rotation_speed_is_none() {
+        let msg = make_minimal_msg(1, 0, 0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert!(tok.rotation_speed.is_none());
+    }
+
+    #[test]
+    fn minimal_rotation_acceleration_is_none() {
+        let msg = make_minimal_msg(1, 0, 0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert!(tok.rotation_acceleration.is_none());
+    }
+
+    // ── Error cases ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn empty_message_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio2/tok".to_string(),
+            args: vec![],
+        };
+        assert!(TokenProfile::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn too_few_args_returns_error() {
+        // Only 4 args provided — need at least 6.
+        let msg = OscMessage {
+            addr: "/tuio2/tok".to_string(),
+            args: vec![
+                OscType::Int(1),
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::Float(0.5),
+            ],
+        };
+        assert!(TokenProfile::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn wrong_type_for_session_id_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio2/tok".to_string(),
+            args: vec![
+                OscType::Float(1.0), // should be Int
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::Float(0.0),
+                OscType::Float(0.0),
+                OscType::Float(0.0),
+            ],
+        };
+        assert!(TokenProfile::try_from(&msg).is_err());
+    }
+
+    // ── From<TokenProfile> for OscPacket ─────────────────────────────────────
+
+    #[test]
+    fn from_full_produces_message_packet() {
+        let msg = make_full_msg(1, 2, 3, 0.1, 0.9, 1.5, 0.3, 0.4, 0.5, 0.6, 0.7);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        let packet = OscPacket::from(tok);
+        assert!(matches!(packet, OscPacket::Message(_)));
+    }
+
+    #[test]
+    fn from_full_address_is_tok() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.addr, "/tuio2/tok");
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_full_has_11_args() {
+        let msg = make_full_msg(1, 2, 3, 0.1, 0.9, 1.5, 0.3, 0.4, 0.5, 0.6, 0.7);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.args.len(), 11);
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_minimal_has_6_args() {
+        let msg = make_minimal_msg(1, 0, 0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.args.len(), 6);
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_full_round_trip_session_id() {
+        let msg = make_full_msg(42, 1, 2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.args[0], OscType::Int(42));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_full_round_trip_position() {
+        let msg = make_full_msg(1, 0, 0, 0.3, 0.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.args[3], OscType::Float(0.3));
+            assert_eq!(out.args[4], OscType::Float(0.7));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_full_round_trip_velocity() {
+        let msg = make_full_msg(1, 0, 0, 0.0, 0.0, 0.0, 1.5, 2.5, 0.0, 0.0, 0.0);
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.args[6], OscType::Float(1.5));
+            assert_eq!(out.args[7], OscType::Float(2.5));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    // ── Partial optional fields ───────────────────────────────────────────────
+
+    #[test]
+    fn only_velocity_provided_produces_8_args() {
+        // 6 required + 2 velocity = 8 args; subsequent optional fields omitted.
+        let msg = OscMessage {
+            addr: "/tuio2/tok".to_string(),
+            args: vec![
+                OscType::Int(1),
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::Float(0.0),
+                OscType::Float(0.0),
+                OscType::Float(0.0),
+                OscType::Float(1.0), // vx
+                OscType::Float(2.0), // vy
+            ],
+        };
+        let tok = TokenProfile::try_from(&msg).unwrap();
+        assert!(tok.velocity.is_some());
+        assert!(tok.acceleration.is_none());
+        assert!(tok.rotation_speed.is_none());
+        assert!(tok.rotation_acceleration.is_none());
+        if let OscPacket::Message(out) = OscPacket::from(tok) {
+            assert_eq!(out.args.len(), 8);
+        }
     }
 }
