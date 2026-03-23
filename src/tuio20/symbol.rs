@@ -141,3 +141,299 @@ impl From<SymbolProfile> for OscPacket {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::f32::consts::PI;
+
+    use rosc::{OscMessage, OscPacket, OscType};
+
+    use crate::core::TuioProfile;
+
+    use super::SymbolProfile;
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    fn make_msg(
+        session_id: i32,
+        type_user_id: i32,
+        component_id: i32,
+        group: &str,
+        data: &str,
+    ) -> OscMessage {
+        OscMessage {
+            addr: "/tuio2/sym".to_string(),
+            args: vec![
+                OscType::Int(session_id),
+                OscType::Int(type_user_id),
+                OscType::Int(component_id),
+                OscType::String(group.to_string()),
+                OscType::String(data.to_string()),
+            ],
+        }
+    }
+
+    // ── TryFrom<&OscMessage> ─────────────────────────────────────────────────
+
+    #[test]
+    fn decodes_session_id() {
+        let msg = make_msg(42, 0, 0, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.session_id(), 42);
+    }
+
+    #[test]
+    fn decodes_type_user_id() {
+        let msg = make_msg(1, 99, 0, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.type_user_id, 99);
+    }
+
+    #[test]
+    fn decodes_component_id() {
+        let msg = make_msg(1, 0, 7, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.component_id, 7);
+    }
+
+    #[test]
+    fn decodes_group() {
+        let msg = make_msg(1, 0, 0, "TUIO", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.group, "TUIO");
+    }
+
+    #[test]
+    fn decodes_data() {
+        let msg = make_msg(1, 0, 0, "G", "hello_world");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.data, "hello_world");
+    }
+
+    #[test]
+    fn decodes_empty_group_string() {
+        let msg = make_msg(1, 0, 0, "", "some_data");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.group, "");
+    }
+
+    #[test]
+    fn decodes_empty_data_string() {
+        let msg = make_msg(1, 0, 0, "some_group", "");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        assert_eq!(sym.data, "");
+    }
+
+    // ── Error cases ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn empty_message_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio2/sym".to_string(),
+            args: vec![],
+        };
+        assert!(SymbolProfile::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn too_few_args_returns_error() {
+        // Only 3 args provided — need 5.
+        let msg = OscMessage {
+            addr: "/tuio2/sym".to_string(),
+            args: vec![OscType::Int(1), OscType::Int(0), OscType::Int(0)],
+        };
+        assert!(SymbolProfile::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn wrong_type_for_session_id_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio2/sym".to_string(),
+            args: vec![
+                OscType::Float(1.0), // should be Int
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::String("G".to_string()),
+                OscType::String("D".to_string()),
+            ],
+        };
+        assert!(SymbolProfile::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn wrong_type_for_group_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio2/sym".to_string(),
+            args: vec![
+                OscType::Int(1),
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::Int(99), // should be String
+                OscType::String("D".to_string()),
+            ],
+        };
+        assert!(SymbolProfile::try_from(&msg).is_err());
+    }
+
+    #[test]
+    fn wrong_type_for_data_returns_error() {
+        let msg = OscMessage {
+            addr: "/tuio2/sym".to_string(),
+            args: vec![
+                OscType::Int(1),
+                OscType::Int(0),
+                OscType::Int(0),
+                OscType::String("G".to_string()),
+                OscType::Float(PI), // should be String
+            ],
+        };
+        assert!(SymbolProfile::try_from(&msg).is_err());
+    }
+
+    // ── From<SymbolProfile> for OscPacket ────────────────────────────────────
+
+    #[test]
+    fn from_produces_message_packet() {
+        let msg = make_msg(1, 2, 3, "mygroup", "mydata");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        let packet = OscPacket::from(sym);
+        assert!(matches!(packet, OscPacket::Message(_)));
+    }
+
+    #[test]
+    fn from_address_is_sym() {
+        let msg = make_msg(1, 0, 0, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(out.addr, "/tuio2/sym");
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_has_5_args() {
+        let msg = make_msg(1, 2, 3, "mygroup", "mydata");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(out.args.len(), 5);
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_encodes_session_id_at_index_0() {
+        let msg = make_msg(77, 0, 0, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(out.args[0], OscType::Int(77));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_encodes_type_user_id_at_index_1() {
+        let msg = make_msg(1, 55, 0, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(out.args[1], OscType::Int(55));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_encodes_component_id_at_index_2() {
+        let msg = make_msg(1, 0, 33, "G", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(out.args[2], OscType::Int(33));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_encodes_group_at_index_3() {
+        let msg = make_msg(1, 0, 0, "QRCode", "D");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(out.args[3], OscType::String("QRCode".to_string()));
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    #[test]
+    fn from_encodes_data_at_index_4() {
+        let msg = make_msg(1, 0, 0, "G", "barcode_value_123");
+        let sym = SymbolProfile::try_from(&msg).unwrap();
+        if let OscPacket::Message(out) = OscPacket::from(sym) {
+            assert_eq!(
+                out.args[4],
+                OscType::String("barcode_value_123".to_string())
+            );
+        } else {
+            panic!("expected OscPacket::Message");
+        }
+    }
+
+    // ── Round-trip: decode → re-encode → decode ───────────────────────────────
+
+    #[test]
+    fn round_trip_preserves_all_fields() {
+        let msg = make_msg(10, 20, 30, "namespace", "payload");
+        let sym1 = SymbolProfile::try_from(&msg).unwrap();
+        let packet = OscPacket::from(sym1);
+        if let OscPacket::Message(re_encoded) = packet {
+            let sym2 = SymbolProfile::try_from(&re_encoded).unwrap();
+            assert_eq!(sym2.session_id(), 10);
+            assert_eq!(sym2.type_user_id, 20);
+            assert_eq!(sym2.component_id, 30);
+            assert_eq!(sym2.group, "namespace");
+            assert_eq!(sym2.data, "payload");
+        } else {
+            panic!("expected OscPacket::Message after encoding");
+        }
+    }
+
+    #[test]
+    fn round_trip_with_special_characters_in_strings() {
+        let msg = make_msg(1, 0, 0, "group/sub", "data:value=42&foo=bar");
+        let sym1 = SymbolProfile::try_from(&msg).unwrap();
+        let packet = OscPacket::from(sym1);
+        if let OscPacket::Message(re_encoded) = packet {
+            let sym2 = SymbolProfile::try_from(&re_encoded).unwrap();
+            assert_eq!(sym2.group, "group/sub");
+            assert_eq!(sym2.data, "data:value=42&foo=bar");
+        } else {
+            panic!("expected OscPacket::Message after encoding");
+        }
+    }
+
+    #[test]
+    fn round_trip_with_negative_ids() {
+        // session IDs and type/component IDs can technically be any i32
+        let msg = make_msg(-1, -2, -3, "G", "D");
+        let sym1 = SymbolProfile::try_from(&msg).unwrap();
+        let packet = OscPacket::from(sym1);
+        if let OscPacket::Message(re_encoded) = packet {
+            let sym2 = SymbolProfile::try_from(&re_encoded).unwrap();
+            assert_eq!(sym2.session_id(), -1);
+            assert_eq!(sym2.type_user_id, -2);
+            assert_eq!(sym2.component_id, -3);
+        } else {
+            panic!("expected OscPacket::Message after encoding");
+        }
+    }
+
+    // ── address() ─────────────────────────────────────────────────────────────
+
+    #[test]
+    fn address_is_tuio2_sym() {
+        use crate::core::TuioProfile;
+        assert_eq!(SymbolProfile::address(), "/tuio2/sym");
+    }
+}

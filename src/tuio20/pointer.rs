@@ -52,7 +52,7 @@ impl Pointer {
 
     pub(crate) fn update(&mut self, time: &TuioTime, pointer: &PointerProfile) {
         self.container.update(time);
-        self.translation.update(
+        self.translation.update_from_message(
             pointer.position,
             pointer.velocity.unwrap_or_default(),
             pointer.acceleration.unwrap_or_default(),
